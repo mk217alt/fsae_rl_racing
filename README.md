@@ -28,7 +28,7 @@ The base car model and track used by the early lineages were built directly in I
 
 Implemented in:
 
-`Simulation_Environment_Setup/create_simple_car.py`, `create_track.py`, `add_car_body.py`, `add_second_car.py`, `remove_car_body.py`, `set_front_wheel_drive.py`, `drive_car.py`
+`Simulation/Simulation_Environment_Setup/create_simple_car.py`, `create_track.py`, `add_car_body.py`, `add_second_car.py`, `remove_car_body.py`, `set_front_wheel_drive.py`, `drive_car.py`
 
 ### Workflow
 ```
@@ -63,7 +63,7 @@ The accepted, final single-car policy: pure reinforcement learning, no imitation
 
 Implemented in:
 
-`Single_Car_Baseline/car_track_env.py`, `train_car2.py`, `run_dual_car.py`
+`Baselines/Single_Car_Baseline/car_track_env.py`, `train_car2.py`, `run_dual_car.py`
 
 ### Workflow
 ```
@@ -102,7 +102,7 @@ An attempt to warm-start the single-car policy from human driving demonstrations
 
 Implemented in:
 
-`BC_Finetuning_Experiment/record_driving.py`, `pretrain_bc.py`, `warmup_critic.py`, `finetune_bc.py` (`_v2` through `_v5`)
+`Baselines/BC_Finetuning_Experiment/record_driving.py`, `pretrain_bc.py`, `warmup_critic.py`, `finetune_bc.py` (`_v2` through `_v5`)
 
 ### Workflow
 ```
@@ -137,7 +137,7 @@ A non-learned control baseline, to measure how much a learned policy actually ga
 
 Implemented in:
 
-`Classical_Baseline/pure_pursuit_baseline.py`
+`Baselines/Classical_Baseline/pure_pursuit_baseline.py`
 
 ### Workflow
 ```
@@ -164,7 +164,7 @@ An experimental lineage combining two changes at once: parallel training for spe
 
 Implemented in:
 
-`Vec_Curvature_Lineage/build_vec_track_env.py`, `build_vec_deploy_stage.py`, `car_track_vec_env.py`, `train_car2_vec.py`, `run_dual_car_vec.py`
+`Racing/Vec_Curvature_Lineage/build_vec_track_env.py`, `build_vec_deploy_stage.py`, `car_track_vec_env.py`, `train_car2_vec.py`, `run_dual_car_vec.py`
 
 ### Workflow
 ```
@@ -193,7 +193,7 @@ A reward-shaping experiment: loosen the centerline-adherence penalty and let the
 
 Implemented in:
 
-`Racing_Line_Variant/car_track_racingline_vec_env.py`, `train_car2_racingline.py`
+`Racing/Racing_Line_Variant/car_track_racingline_vec_env.py`, `train_car2_racingline.py`
 
 ### Workflow
 ```
@@ -229,7 +229,7 @@ The main active lineage: two cars sharing one track, driven by a single shared p
 
 Implemented in:
 
-`Two_Car_Self_Play_Racing/build_race_track_env.py`, `build_race_deploy_stage.py`, `car_race_vec_env.py`, `train_race_vec.py`, `run_race_demo.py`, `run_race_solo_demo.py`, `run_race_playable_demo.py`, `diag_race_solver_fix.py`, `run_accel_demo.py`
+`Racing/Two_Car_Self_Play_Racing/build_race_track_env.py`, `build_race_deploy_stage.py`, `car_race_vec_env.py`, `train_race_vec.py`, `run_race_demo.py`, `run_race_solo_demo.py`, `run_race_playable_demo.py`, `diag_race_solver_fix.py`, `run_accel_demo.py`
 
 ### Workflow
 ```
@@ -265,7 +265,7 @@ A head-to-head test between the racing-line single-car policy (no opponent aware
 
 Implemented in:
 
-`Comparative_Evaluation/race_mixed_policy_eval.py`, `run_mixed_race_demo.py`
+`Evaluation/Comparative_Evaluation/race_mixed_policy_eval.py`, `run_mixed_race_demo.py`
 
 ### Workflow
 ```
@@ -297,7 +297,7 @@ Utility and diagnostic scripts used during development to validate track geometr
 
 Implemented in:
 
-`Verification_and_Testing/test_car_track_env.py`, `test_xform_order.py`, `validate_clockwise.py`, `verify_car.py`, `verify_deploy_fixes.py`, `verify_track.py`, `verify_vec_track_env.py`, `smoke_test_race_env.py`, `smoke_test_vec_env.py`, `diagnose_stage.py`
+`Evaluation/Verification_and_Testing/test_car_track_env.py`, `test_xform_order.py`, `validate_clockwise.py`, `verify_car.py`, `verify_deploy_fixes.py`, `verify_track.py`, `verify_vec_track_env.py`, `smoke_test_race_env.py`, `smoke_test_vec_env.py`, `diagnose_stage.py`
 
 ---
 
@@ -315,5 +315,5 @@ Implemented in:
 All scripts are run via Isaac Sim's bundled Python interpreter, e.g.:
 
 ```
-python.bat Two_Car_Self_Play_Racing/train_race_vec.py 1000000
+python.bat Racing/Two_Car_Self_Play_Racing/train_race_vec.py 1000000
 ```
