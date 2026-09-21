@@ -56,6 +56,15 @@ OFF_TRACK_PENALTY = 30.0
 # throttle earns the full bonus; still small enough that the centering/
 # off-track penalties above dominate if going faster would risk leaving the road.
 THROTTLE_BONUS_WEIGHT = 0.25
+# 2026-09-21: smoothness experiment, at user's request to address the
+# professor's "smooth driving" milestone item - penalize jerky consecutive
+# steer/throttle changes. Kept modest (0.08) relative to the per-step
+# progress/centering terms above (which are the dominant, already-converged
+# signal) so this nudges toward smoother control without fighting the
+# existing reward balance or risking a repeat of the collision-penalty-style
+# runaway-suppression pathology seen in the two-car lineage when a new
+# per-step penalty was introduced too aggressively.
+SMOOTHNESS_PENALTY_WEIGHT = 0.08
 
 
 def _arc_points(center, radius, start_deg, end_deg, n):
@@ -118,6 +127,7 @@ class CarTrackEnv(gym.Env):
 
         self._step_count = 0
         self._last_progress = 0.0
+        self._last_action = np.zeros(2, dtype=np.float32)
         self._rng = np.random.default_rng()
 
         self._world.play()
@@ -200,6 +210,7 @@ class CarTrackEnv(gym.Env):
 
         obs, progress, _ = self._get_obs_and_state()
         self._last_progress = progress
+        self._last_action = np.zeros(2, dtype=np.float32)
         return obs, {}
 
     def step(self, action):
@@ -225,6 +236,10 @@ class CarTrackEnv(gym.Env):
 
         reward = delta - LATERAL_PENALTY_WEIGHT * abs(lateral_offset)
         reward += THROTTLE_BONUS_WEIGHT * max(0.0, throttle)
+
+        action_delta = abs(throttle - self._last_action[0]) + abs(steer - self._last_action[1])
+        reward -= SMOOTHNESS_PENALTY_WEIGHT * action_delta
+        self._last_action = np.array([throttle, steer], dtype=np.float32)
 
         self._step_count += 1
         off_track = abs(lateral_offset) > OFF_TRACK_MARGIN

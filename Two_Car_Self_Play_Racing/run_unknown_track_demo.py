@@ -1,18 +1,16 @@
 """Live demo of the two-car self-play racing policy (car_race_ppo_model.zip)
-on race_deploy.usd - both cars are autonomous, driven by the SAME shared
-network (self-play), each fed its own 10-dim observation (7-dim curvature-
-aware state + 3 opponent-relative features).
+on the UNKNOWN track (unknown_track.usd, built by build_unknown_track_deploy.py)
+used for the zero-shot generalization test - not the track it trained on.
+Same self-play setup as run_race_demo.py (shared network, both cars
+autonomous), just pointed at the new track's stage and centerline geometry,
+so this is what to open to actually watch the generalization-test result
+(see car_racing_status.md's "Unknown-track zero-shot generalization test"
+entry for the numeric result: survival matches the trained track almost
+exactly, but reward/driving-line quality collapses).
 
-No human driving in this demo - just watch the two cars race. Includes the
-same physical-safety recovery net as the single-car demo (off-track,
-tipping, wrong-height). This is a deliberate, documented workaround for an
-unresolved chassis-collapse bug in this stage's wheel joints under
-sustained throttle - reproduced consistently across five different fix
-attempts (solver iterations, drive force, knuckle mass, self-collision
-filtering, wheel speed), none of which changed the outcome. A collapsed
-chassis has no physical way to recover no matter how good the driving
-policy is, so until that's properly root-caused, the recovery net stays in
-so training/demo work can proceed.
+Includes the same physical-safety recovery net and the async-telemetry fix
+as run_race_demo.py (see that file's 2026-09-21 note on the periodic-stutter
+bug this avoids).
 """
 
 import math
@@ -31,9 +29,9 @@ from isaacsim.core.api import World
 from isaacsim.core.prims import Articulation
 from isaacsim.core.utils.stage import open_stage
 
-from car_race_vec_env import CHASSIS_Z, OFF_TRACK_MARGIN, build_centerline, wrap_to_pi
+from car_unknown_track_env import CHASSIS_Z, OFF_TRACK_MARGIN, build_centerline, wrap_to_pi
 
-CAR_USD = "C:/Users/sanja/Desktop/thesis/Two_Car_Self_Play_Racing/race_deploy.usd"
+CAR_USD = "C:/Users/sanja/Desktop/thesis/Two_Car_Self_Play_Racing/unknown_track.usd"
 MODEL_PATH = "C:/Users/sanja/Desktop/thesis/Two_Car_Self_Play_Racing/car_race_ppo_model"
 
 DRIVE_JOINTS = ["front_left_drive_joint", "front_right_drive_joint"]
@@ -130,32 +128,22 @@ def own_state(car):
     return partial_obs, progress, lateral_offset, forward_speed, tangent_angle, px, py, up_z, height_error
 
 
-ACTION_REPEAT = 4  # must match car_race_vec_env.py - hold each action this many physics steps
+ACTION_REPEAT = 4  # must match car_unknown_track_env.py - hold each action this many physics steps
 _control_counter = [0]
 _action_counter = [0]
 
-# Same stuck-detector as the mixed racing-line-vs-self-play demo: none of
-# off-track/tilt/height catch two cars wedged against each other while
-# upright, so track per-car progress directly as a backstop.
 STUCK_CHECK_INTERVAL = 300
 STUCK_MIN_PROGRESS = 1.5
 _stuck_ref_progress = [None, None]
 _stuck_ref_action = [0, 0]
 
-# Recovery events by cause, so successive training rounds on the racing
-# lineage can be compared on "how often did this actually need the demo's
-# physical-bug workaround" - off-track should trend down with more/better
-# training, tilt/height (the chassis-collapse bug, see rl_journal.html §6)
-# is not expected to, since a scripted no-policy stress test reproduces it
-# identically regardless of driving quality.
 recovery_counts = {"off_track": 0, "tilt": 0, "height": 0, "stuck": 0}
-_stats_counter = [0]
 
 
 def control_step(step_size):
     _control_counter[0] += 1
     if _control_counter[0] % ACTION_REPEAT != 0:
-        return  # hold the previously-set joint targets, matching training's cadence
+        return
     _action_counter[0] += 1
 
     states = [own_state(car_a), own_state(car_b)]
@@ -195,10 +183,7 @@ def control_step(step_size):
         # that driving quality is consistently 85-98%+ full-length on both
         # tracks - the policy runs raw. These counters stay as a diagnostic
         # log of what WOULD have triggered a recovery before, not an
-        # intervention: recover_car() is no longer called, so a car that
-        # genuinely leaves the track, tips, gets stuck, or hits the still-
-        # unresolved chassis-collapse bug now just stays down/off rather than
-        # being teleported back.
+        # intervention (see run_race_demo.py's matching note).
         off_track = abs(lateral_offset) > RECOVERY_MARGIN
         tilted = up_z < 0.9
         wrong_height = height_error > 0.08
@@ -224,14 +209,6 @@ def control_step(step_size):
 
 
 _telemetry_counter = [0]
-
-# 2026-09-21: the periodic ~1s freeze the user noticed during live demos was
-# this callback doing synchronous file opens/writes directly on the physics
-# thread every 120 steps, at a perfectly regular interval - textbook cause
-# of a rhythmic stutter. Fix: the physics callback only does fast in-memory
-# work (read poses, snapshot counters) and hands the data to a background
-# thread via a queue; that thread does the actual disk I/O, off the physics/
-# render loop entirely, so any filesystem latency can no longer stall the sim.
 _telemetry_queue = queue.Queue()
 
 
@@ -241,11 +218,11 @@ def _telemetry_writer():
         if item is None:
             break
         t, pa0, pb0, action_count, recovery_snapshot = item
-        with open("C:/Users/sanja/Desktop/thesis/race_demo_telemetry.txt", "a") as f:
+        with open("C:/Users/sanja/Desktop/thesis/unknown_track_demo_telemetry.txt", "a") as f:
             f.write(f"t={t} carA={pa0} carB={pb0}\n")
 
         total = sum(recovery_snapshot.values())
-        with open("C:/Users/sanja/Desktop/thesis/race_demo_recovery_stats.txt", "w") as f:
+        with open("C:/Users/sanja/Desktop/thesis/unknown_track_demo_recovery_stats.txt", "w") as f:
             f.write(f"t={t} total_control_actions={action_count}\n")
             for cause, count in recovery_snapshot.items():
                 f.write(f"  {cause}: {count} ({100.0 * count / total if total else 0:.1f}%)\n")
@@ -267,7 +244,7 @@ def telemetry_step(step_size):
 world.add_physics_callback("control_step", callback_fn=control_step)
 world.add_physics_callback("telemetry_step", callback_fn=telemetry_step)
 
-with open("C:/Users/sanja/Desktop/thesis/run_race_demo_ready.txt", "w") as f:
+with open("C:/Users/sanja/Desktop/thesis/run_unknown_track_demo_ready.txt", "w") as f:
     f.write("ready\n")
 
 world.play()
