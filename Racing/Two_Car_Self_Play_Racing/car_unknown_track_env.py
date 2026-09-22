@@ -56,17 +56,49 @@ CHASSIS_Z = 0.45
 ACTION_REPEAT = 4
 MAX_EPISODE_STEPS = 500
 OFF_TRACK_MARGIN = TRACK_WIDTH / 2.0 - 0.3
-# Same reward weights as the policy trained under (car_race_vec_env.py) -
-# this is an evaluation of the trained policy's behavior, not a new reward
-# design, so the weights must match for the numbers to be comparable.
 LATERAL_PENALTY_WEIGHT = 0.9
 OFF_TRACK_PENALTY = 150.0
-THROTTLE_BONUS_WEIGHT = 0.15
+# 2026-09-21: raised 0.15->0.30 at the user's request after the lap-timing
+# benchmark confirmed a real ~15% slowdown (22s->26s laps) developing over
+# runs 6-12 - the policy had drifted toward a cautious, low-throttle style
+# since nothing in the reward pushed back against it. Doubling (not a huge
+# jump) to nudge speed back up without repeating this project's history of
+# oversized weight changes causing overcorrections (see the collision-
+# penalty arc in car_racing_status.md).
+THROTTLE_BONUS_WEIGHT = 0.30
 LOOKAHEAD_DIST = 5.0
 START_LATERAL_SPACING = 1.5
 COLLISION_DIST = 1.2
 COLLISION_PENALTY = 1.5
 OPPONENT_GAP_CLIP = 30.0
+# 2026-09-21: overtake incentive, added at the user's request after
+# observing one car just follows the other instead of actually racing.
+# Root cause: neither car's reward depended at all on its position relative
+# to the opponent - only individual progress + a shared collision-avoidance
+# penalty - so self-play had nothing to gain by contesting position and
+# converged to a safe follow-the-leader equilibrium. This term rewards a
+# car for gaining relative ground on its opponent (closing the gap when
+# behind, extending the lead when ahead) each step, and penalizes losing
+# ground - computed from the change in the same opponent_progress_gap
+# observation feature already used elsewhere, so the two cars in a pair
+# always get exactly opposite-signed values (zero-sum, redistributing
+# reward toward competitive racing rather than inflating the total reward
+# budget). Kept modest (0.3) relative to the unweighted ~1.0/meter progress
+# term, matching this project's repeated lesson that oversized new per-step
+# terms cause runaway-suppression pathologies (the COLLISION_PENALTY=5.0
+# incident, the run19-21 overcorrection arc).
+OVERTAKE_INCENTIVE_WEIGHT = 0.3
+# 2026-09-21: smoothness penalty, added at the user's request after
+# reporting jerky driving on the demo following the throttle-bonus raise
+# and overtake incentive above - both reward bursty throttle/steer changes
+# (accelerate hard to close a gap, brake into a corner) and nothing here
+# previously penalized jerkiness, unlike the single-car baseline
+# (car_track_env.py), which already uses this exact mechanism at the same
+# weight and measured an 18.6% reduction in action jitter with no loss of
+# consistency. Mirrors that fix exactly: penalize the per-step change in
+# consecutive throttle/steer commands, kept at the same modest 0.08 weight
+# relative to the unweighted ~1.0/meter progress term.
+SMOOTHNESS_PENALTY_WEIGHT = 0.08
 
 
 def wrap_to_pi(angle):
@@ -141,6 +173,8 @@ class UnknownTrackVecEnv(VecEnv):
 
         self._step_count = np.zeros(num_pairs, dtype=np.int64)
         self._last_progress = np.zeros(num_envs, dtype=np.float64)
+        self._last_opp_gap = np.zeros(num_envs, dtype=np.float64)
+        self._last_action = np.zeros((num_envs, 2), dtype=np.float32)
         self._rng = np.random.default_rng()
         self._actions = None
 
@@ -277,6 +311,8 @@ class UnknownTrackVecEnv(VecEnv):
         self._reset_pairs(np.arange(self.num_pairs))
         obs, progresses, _, _ = self._full_obs_and_progress()
         self._last_progress = progresses
+        self._last_opp_gap = obs[:, 7].astype(np.float64).copy()
+        self._last_action = np.zeros((self.num_envs, 2), dtype=np.float32)
         return obs
 
     def step_async(self, actions):
@@ -308,6 +344,11 @@ class UnknownTrackVecEnv(VecEnv):
             elif delta < -self._track_length / 2.0:
                 delta += self._track_length
             reward = delta - LATERAL_PENALTY_WEIGHT * abs(laterals[i]) + THROTTLE_BONUS_WEIGHT * max(0.0, float(throttle[i]))
+            overtake_gain = self._last_opp_gap[i] - float(obs[i][7])
+            reward += OVERTAKE_INCENTIVE_WEIGHT * overtake_gain
+            action_delta = abs(float(throttle[i]) - self._last_action[i, 0]) + abs(float(steer[i]) - self._last_action[i, 1])
+            reward -= SMOOTHNESS_PENALTY_WEIGHT * action_delta
+            self._last_action[i] = [throttle[i], steer[i]]
             off_track = abs(laterals[i]) > OFF_TRACK_MARGIN
             if off_track:
                 reward -= OFF_TRACK_PENALTY
@@ -347,6 +388,10 @@ class UnknownTrackVecEnv(VecEnv):
                 a, b = 2 * pi, 2 * pi + 1
                 obs[a], obs[b] = obs2[a], obs2[b]
                 self._last_progress[a], self._last_progress[b] = progresses2[a], progresses2[b]
+                self._last_action[a] = 0.0
+                self._last_action[b] = 0.0
+
+        self._last_opp_gap = obs[:, 7].astype(np.float64).copy()
 
         return obs, rewards, dones, infos
 
