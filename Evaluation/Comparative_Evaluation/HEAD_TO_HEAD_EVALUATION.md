@@ -1,4 +1,4 @@
-# Head-to-head re-run: racing-line policy vs. two-car self-play policy (2026-09-24)
+# Head-to-head re-run: racing-line policy vs. two-car self-play policy (2026-09-23)
 
 `head_to_head_eval.py` repeats the journal's §8 head-to-head (`race_mixed_policy_eval.py`) on the **fixed**
 `race_deploy.usd` (analytic ground plane) against a named self-play checkpoint, **run49** (final original-track

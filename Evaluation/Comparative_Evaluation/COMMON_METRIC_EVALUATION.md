@@ -26,7 +26,7 @@ Deterministic re-runs reproduce identical numbers (checked for `baseline450`).
 | Racing-line | analytic plane (swapped) | **20/20** | 0 | 0 | **21.27 +/- 0.03** | **5.82** | 0.16 | 0.073 |
 
 Notes:
-* **Direction of travel (corrected 2026-09-24).** The vec lineage was trained on the ORIGINAL vertex order
+* **Direction of travel (corrected 2026-09-23).** The vec lineage was trained on the ORIGINAL vertex order
   of `build_centerline()`; `points = list(reversed(points))` was added to `car_track_vec_env.py` only
   afterwards (2026-09-17, "make it clockwise" demo request, 5/5 reversed trials failed within 50-63 steps)
   and the lineage was never retrained. The first run of this evaluation used the current (reversed) file
