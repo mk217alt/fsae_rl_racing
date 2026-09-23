@@ -58,6 +58,23 @@ car_b = Articulation(prim_paths_expr="/World/CarB/chassis")
 car_b.initialize()
 cars = [car_a, car_b]
 
+# 2026-09-23: unknown_track.usd's two spawn points (build_unknown_track_deploy.py,
+# (0,-1.5) and (0,1.5)) are fixed and never randomized, so whichever physical
+# spot is mildly favorable for the first corner always wins - confirmed via a
+# one-off swap test (car A and B's win rates were identical once positions
+# were swapped, and the win stayed with the position, not the car). Randomly
+# swapping which car occupies which spawn point each run removes this
+# deterministic labeling bias without changing the actual track/physics.
+if np.random.default_rng().random() < 0.5:
+    pos_a, orient_a = car_a.get_world_poses()
+    pos_b, orient_b = car_b.get_world_poses()
+    car_a.set_world_poses(positions=pos_b, orientations=orient_b)
+    car_b.set_world_poses(positions=pos_a, orientations=orient_a)
+    car_a.set_velocities(np.zeros((1, 6)))
+    car_b.set_velocities(np.zeros((1, 6)))
+    for _ in range(2):
+        world.step(render=False)
+
 policy = PPO.load(MODEL_PATH, device="cpu")
 points, cumulative = build_centerline()
 n_segments = len(points)
@@ -139,6 +156,30 @@ _stuck_ref_action = [0, 0]
 
 recovery_counts = {"off_track": 0, "tilt": 0, "height": 0, "stuck": 0}
 
+CONTROL_DT = ACTION_REPEAT / 60.0
+_prev_action = [None, None]
+_delta_queue = queue.Queue()
+
+
+def _delta_writer():
+    with open("C:/Users/sanja/Desktop/thesis/unknown_track_demo_action_deltas.csv", "w") as f:
+        f.write("t_sim,car,delta\n")
+        f.flush()
+        n = 0
+        while True:
+            item = _delta_queue.get()
+            if item is None:
+                break
+            t, car, delta = item
+            f.write(f"{t:.3f},{car},{delta:.5f}\n")
+            n += 1
+            if n % 30 == 0:
+                f.flush()
+
+
+_delta_thread = threading.Thread(target=_delta_writer, daemon=True)
+_delta_thread.start()
+
 
 def control_step(step_size):
     _control_counter[0] += 1
@@ -200,6 +241,13 @@ def control_step(step_size):
         obs = np.concatenate([partial_obs, [opp_gap[idx], opp_lat_gap[idx], opp_speed_gap[idx]]])
         action, _ = policy.predict(obs, deterministic=True)
         action = np.clip(action, -1.0, 1.0)
+
+        if _prev_action[idx] is not None:
+            delta = float(abs(action[0] - _prev_action[idx][0]) + abs(action[1] - _prev_action[idx][1]))
+            t_sim = _action_counter[0] * CONTROL_DT
+            _delta_queue.put((t_sim, "A" if idx == 0 else "B", delta))
+        _prev_action[idx] = action
+
         car.set_joint_velocity_targets(
             np.full((1, len(DRIVE_JOINTS)), float(action[0]) * MAX_WHEEL_SPEED), joint_names=DRIVE_JOINTS
         )
@@ -253,4 +301,6 @@ while simulation_app.is_running():
 
 _telemetry_queue.put(None)
 _telemetry_thread.join(timeout=2.0)
+_delta_queue.put(None)
+_delta_thread.join(timeout=2.0)
 simulation_app.close()

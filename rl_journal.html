@@ -1,3 +1,4 @@
+
 <title>Self-Driving Lap</title>
 <style>
   :root {
@@ -354,6 +355,10 @@
   </div>
 </header>
 
+<div class="callout verdict" style="margin:-24px 0 48px"><span class="tag">Correction 2026-09-24</span><p>Several results in this journal were re-checked with direct physical measurements (lap time, distance, chassis height) instead of the training reward, and some did not survive. The <strong>racing-line</strong> and <strong>vec + curvature</strong> training rewards were artifacts of the box-ground chassis-collapse bug; the <strong>racing-line vs. self-play head-to-head</strong> was re-run on the fixed stage: the earlier "19% more distance" was an artifact, and the real margin is about 0.5%; the <strong>pure-pursuit</strong> controller is faster than the RL baseline in lap time; and the recovery rate in "How often, really?" is 23% of vehicle decisions, not 45%; and the <strong>behavioral-cloning</strong> demonstrations were recorded driving the track the opposite way round. Details in <a href="#corrections">§10</a>; the affected entries carry a correction note.</p></div>
+
+<div class="callout verdict" style="margin:-32px 0 48px"><span class="tag">Correction 2026-09-25</span><p>A race evaluation of the two-car lineage (eight stadium checkpoints and two original-track checkpoints; both cars driven by the same checkpoint; 12 heats of 133&nbsp;s each from random side-by-side starts, no safety net) changes several readings of §7 and §9. The cars <strong>never actually raced</strong>: 11 lead changes in 96 stadium heats, 9 of them after an incident of the leader, and the car that started on the inside led at the end of 85 heats. The <strong>zero-shot</strong> policy drove the unknown track only 8% slower than the adapted one; its reward drop is mostly the centering penalty. The <strong>jerky driving</strong> predates the overtaking terms. The <strong>final policy</strong> is slower (22.63 vs. 22.05&nbsp;s) and less smooth (action delta 0.120 vs. 0.042) than newtrack_run3. Details in <a href="#corrections">§10</a>.</p></div>
+
 <section id="how">
   <h2 class="section-head"><span class="idx">01</span> How the training actually works</h2>
   <p class="lede">Car&nbsp;2 learns by trial and error, not by copying Car&nbsp;1's human driving. Every physics step, it looks at where it is relative to the track centerline, picks a throttle/steer action, and gets scored on how well that worked. Repeat that a few hundred thousand times and a driving policy falls out.</p>
@@ -388,6 +393,7 @@
     <tr><td>Run 7 (350k → 450k, same weights)</td><td class="n">0.60</td><td class="n">−30</td><td class="n">0.25</td></tr>
   </table>
   <p style="font-size: 14px; color: var(--ink-soft);">Run 4 was killed partway through (§2, Phase 9) when the weights were revised again before it finished, so it never produced a checkpoint — Run 5 resumes cleanly from Run 3's saved policy instead. Runs 6 and 7 changed nothing about the reward — same Run 5 weights, another 200k steps total, to see whether an already-converged policy had more to give. It did, up to a point: Run 6 climbed reward from the 89–104 range to 108–113; Run 7 held at that level (105–113) rather than climbing further, the expected shape of a policy that has essentially converged.</p>
+      <div class="callout mistake"><span class="tag">Note 2026-09-25</span><p>The training logs contain a single process from 50,688 to 150,528 steps for Runs&nbsp;2 and 3 (one invocation, one set of constants), so the split into two weight sets in this table cannot be confirmed from the logs. Run&nbsp;3's weights are certainly the ones in effect at 150k, because the interrupted Run&nbsp;4 continued with them.</p></div>
 
   <p>Deployment (<code>run_dual_car.py</code>) reuses the exact same centerline math as training — both files import <code>build_centerline()</code> from <code>car_track_env.py</code> — specifically so the policy never sees a different coordinate convention live than it trained on. It also carries a safety net: if Car&nbsp;2 ever drifts past the off-track margin during the live demo, it's teleported back onto the centerline wherever it currently is (not the start line) so it keeps lapping instead of getting stuck for good.</p>
 </section>
@@ -536,6 +542,7 @@
       <h3>Three datasets, five fixes, one unmoved ceiling</h3>
       <p>Three independently recorded human driving datasets — natural, deliberately centered, and deliberately varied — of three different sizes (2,608 / 1,841 / 1,422 samples), landed on the same ceiling after five genuinely different fixes (action noise, critic calibration, update step size, plus two clean replications). That rules out both the driving-style theory and a data-volume theory: if either were the real constraint, at least one of three independent attempts should have moved the number, and none of them did. What every round shared instead is the technique — behavioral cloning from a small human dataset, then PPO fine-tuning, against this specific reward and termination boundary. The most likely remaining explanation is that BC pretraining on a small demonstration set gives PPO a confident but narrow starting point — fit tightly to the states the demonstrations happened to visit — while pure RL, having no such basin to begin with, explores broadly from the start and simply needed its own large budget (250k+ steps) to get there rather than a shortcut through imitation.</p>
       <div class="callout verdict"><span class="tag">Decision</span><p>Accepted the pure-RL policy (<code>car2_ppo_model.zip</code>, now 450k cumulative steps after Runs 6&ndash;7, reward 105&ndash;113) as the final result and closed out the BC line of work for good. Three well-motivated, carefully executed rounds that all failed the identical way is about as strong a negative result as this kind of experiment produces — not a stalled investigation, a settled one. It says something specific and citable for the write-up: imitation-learning warm-starts don't help RL here, and it isn't for lack of trying different data or different fixes.</p></div>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-24</span><p>The recorded data explain the failure differently. In all three datasets, <strong>100% of the samples have a heading error of more than 90&deg;</strong> (mean cos&nbsp;&minus;0.91 to &minus;0.98): Car&nbsp;1 stands in the scene facing +x, which on its start straight is against the direction of travel of the RL environment, and the track was driven the other way round (left turns, where the RL task needs right turns). The observations were also computed relative to Car&nbsp;2&rsquo;s +3&nbsp;m shifted reference line (median |offset| 2.3&ndash;3.0&nbsp;m; 31% of dataset&nbsp;1 beyond the 4.2&nbsp;m off-track margin), and the keyboard gives only full-or-nothing commands. The three datasets therefore shared one systematic mismatch with the task, and the corrections could not repair it. The experiment shows the effect of distribution shift between demonstrations and task; it does not show that BC warm starts cannot help. "Rules out driving style and data volume" is withdrawn. See &sect;10.</p></div>
     </div>
 
   </div>
@@ -587,6 +594,7 @@
       <div class="phase">Training results</div>
       <h3>A higher ceiling, less consistently reached</h3>
       <p>Across 6→10-clone runs totalling 470k steps, peak reward reached <strong>118.9</strong>, later <strong>121.9</strong> — above the single-env lineage's best of 113.5, suggesting the look-ahead genuinely helps in the best cases. But consistency lagged: only ~50–60% of episodes reached full length, versus the single-env policy's ~99%. Not yet as fully converged, similar in shape to where the single-env lineage sat before its final rounds.</p>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-24</span><p>These rewards were not earned by driving. This lineage trained on <code>vec_train_car2.usd</code>, which still has the finite <em>box</em> ground collider that causes the chassis-collapse bug (§6). A collapsed, stationary car holding full throttle collects the throttle bonus (0.25 per step, 125 per 500-step episode) without ever leaving the track: replayed clones that moved 0.02&ndash;0.21&nbsp;m scored 113&ndash;121, matching the reported peak of 121.9. With the ground replaced by the analytic plane, the policy leaves the track within 43&ndash;53 control steps in 20 of 20 runs &mdash; it never learned to drive. See §10.</p></div>
     </div>
 
     <div class="entry">
@@ -609,6 +617,7 @@
       <p>Reversing the centerline's point order seemed like it should be transparent to an already-trained policy — every observation term is locally relative, not tied to an absolute direction. It wasn't: reversing which way is "forward" flips the sign of every corner's curvature, and the network's fixed weights had learned a specific left/right response to the <em>original</em> curvature pattern. Five reversed-direction trials from different track positions all failed within ~50–60 steps, confirmed as a real, reproducible break rather than noise.</p>
       <div class="callout mistake"><span class="tag">Mistake</span><p>"The math is symmetric" is not the same claim as "an already-trained fixed-weight network generalizes to the mirrored version of what it saw." It doesn't, automatically.</p></div>
       <div class="callout fix"><span class="tag">Fix</span><p>None applied yet within this lineage — noted as a retraining requirement, not a code bug. The clockwise convention was carried forward into the two-car racing work below, trained fresh from the start.</p></div>
+      <div class="callout mistake"><span class="tag">Note 2026-09-24</span><p>Two notes. (1) The reversal was left in <code>car_track_vec_env.py</code>, so any later evaluation that imports it drives this policy against its training direction; the evaluation scripts now restore the original point order for this lineage. (2) Geometrically (z up, seen from above), the <em>original</em> point order of <code>build_centerline()</code> runs clockwise and the reversed order counterclockwise, so the racing-line and two-car lineages actually drive counterclockwise when seen from above, whatever the code comments call it.</p></div>
     </div>
 
     <div class="entry">
@@ -666,21 +675,439 @@
       <div class="callout verdict"><span class="tag">Decision</span><p>Reinstated the recovery net as a documented, practical workaround rather than continue open-ended debugging — a collapsed chassis has no physical way to recover regardless of how good the driving policy is, so no amount of further training fixes this specific failure. The root cause remains open; the next diagnostic step, if picked back up, would be comparing this stage's ground/physics-scene setup line-by-line against the original working single-car stage rather than continuing to guess at car-side parameters.</p></div>
     </div>
 
+    <div class="entry">
+      <div class="phase">Training progression, continued</div>
+      <h3>More consistent, not yet a higher ceiling</h3>
+      <p>A further 1,000,000 steps (run overnight, unattended) brought this lineage to ~3.03M cumulative steps. The clearest gain was in consistency, not peak: full-length rate climbed from the 42–49% band to a 66–76% band across this run's own quartiles — a real jump in how often a race actually finishes rather than ending in a collision or an off-track excursion. Peak reward per quartile (101.1 / 95.1 / 101.0 / 105.7) landed right around the existing ceiling of ~106 rather than above it, suggesting this reward/architecture combination may be approaching its ceiling for now, distinct from the consistency gains still coming through.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Training progression, one more round</div>
+      <h3>The ceiling moved after all</h3>
+      <p>A further 500,000 steps (~3.53M cumulative) revised the previous read. Peak reward per quartile climbed 94.8 / 99.8 / 107.3 / <strong>112.6</strong> — a genuine new high, not just a repeat of the ~106 plateau, and now within reach of the single-car baseline's 105–113 band. Average reward also reached its best-yet level (quartiles −255 → −207 → −211 → −198). Full-length rate was noisier this round (81%→61%→66%→68%, below the previous round's 76% ending point) but given the reward gains this reads as ordinary round-to-round variance in a still-improving policy, not a regression. Conclusion: the "approaching its ceiling" read after the first 1M-step round was premature — there was still room.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Chasing zero resets — a controlled test</div>
+      <h3>Two reward levers, one dominant cause neither could touch</h3>
+      <p>Watching a live demo of this policy prompted a clear goal: fewer resets over training, ideally none. Two independent reward-side interventions were tried across three more rounds (~1.5M steps, ~5.03M cumulative): first raising the centering weight and off-track penalty and lowering the throttle bonus (mirroring exactly what worked for the single-car lineage in §1), then — after that alone didn't move the reset rate — raising the collision penalty further, on the hypothesis that two cars stuck pushing against each other under full commanded throttle is a plausible worst case for the chassis-collapse bug specifically. Both were clean, well-motivated changes; neither touched any car-side physics parameter.</p>
+      <p>The training monitor's full-length rate stayed flat across all three rounds (a 62–77% band, no trend), which by itself was ambiguous — until the live demo's new per-cause recovery breakdown made it unambiguous. Of 330 recovery-triggering control actions in one live session: <strong>off-track 0.5%, tilt 1.0%, height (the chassis-collapse bug) 98.1%, stuck-against-opponent 0.5%</strong>. After the collision-penalty change, a second session measured 390 actions: off-track 0.0%, tilt 2.3%, height 97.1%, stuck 0.6% — the dominant cause hadn't moved at all.</p>
+      <div class="callout mistake"><span class="tag">Finding</span><p>The flat full-length rate wasn't a sign the reward changes failed — they worked exactly as intended: off-track and tilt recoveries are both now under 3% combined, down from being a meaningful share of resets earlier in the lineage. They just couldn't move the number that was actually being watched, because that number is ~97–98% dominated by a bug a no-policy stress test had already shown fires under sustained throttle regardless of who (or what) is driving. Two independent, well-targeted reward interventions failing to shift a dominant cause is itself a controlled result, not just an inconclusive one.</p></div>
+      <p>One more check closed the question rather than just narrowing it: the collision-penalty hypothesis implied two-car <em>interaction</em> was inflating the collapse rate, so the trained policy was run driving a single car completely alone (the other car teleported off the track at startup, never touched again). Result: <strong>100% of all recovery events (79/79) were the height/collapse bug</strong> — zero off-track, zero tilt, zero stuck-against-opponent (trivially, with no opponent present). Solo, the collapse rate is if anything higher than the two-car figure, not lower — definitively ruling out two-car interaction as a contributing cause and reconfirming, with the actual trained policy rather than a scripted stress test, that this bug is purely about sustained throttle against this stage's physics setup.</p>
+      <div class="callout verdict"><span class="tag">Decision</span><p>Accepted the reset rate as a documented simulation-infrastructure limitation rather than pursuing the bug's actual root cause (comparing this stage's ground/physics-scene setup against the original single-car stage, still the one untried diagnostic step). This mirrors the original 2026-09-17 call to reinstate the recovery net rather than keep guessing at car-side parameters. For the write-up: the racing policy's own driving quality is excellent by every trainable measure (off-track ≈0%, tilt ≈1–2%) — what's left in the reset rate is infrastructure, not policy quality, and that separation is now backed by a controlled before/after test rather than a single observation.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">One last lever, for completeness</div>
+      <h3>Maxing the off-track penalty changed nothing — as predicted</h3>
+      <p>Before closing the investigation out, one more explicit request: push the off-track penalty as high as it would go and see if anything was left on the table. Raised from 40 to 150 (still a one-time terminal penalty, not per-step, so none of the runaway-suppression risk the oversized collision penalty had earlier) and trained another 500k steps (~5.53M cumulative). The policy visibly adjusted to the much larger penalty mid-run — <code>approx_kl</code> spiked to 0.19 and <code>clip_fraction</code> to 0.39 (both roughly 5–10× their usual values) — but both settled back to normal by the end of the run with no instability or NaN. Full-length rate: 71%→69%→77%→70%, the same flat band as every round since the reward rework began. Re-verified live on the new checkpoint: <strong>100% of recoveries (57/57) still height, 0% off-track</strong> — identical to before the change.</p>
+      <div class="callout verdict"><span class="tag">Closing this out</span><p>Five reward-side interventions across five rounds (runs 10–14: raise centering weight, raise off-track penalty, lower throttle bonus, raise collision penalty, max the off-track penalty) took off-track driving from a real contributor to essentially zero, and left the dominant reset cause completely untouched every single time. That consistency is the actual finding: this project's reward-shaping toolkit has been pushed as far as it usefully goes on this specific problem, and what remains is a simulation-infrastructure bug, not a training one.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">How often, really?</div>
+      <h3>Nearly half of every decision cycle</h3>
+      <p>A longer live two-car session on the final checkpoint put a number on just how frequent this is, not just which cause dominates: <strong>3,755 recovery events out of 8,310 total control actions</strong> — 99.0% of them height/collapse (3,719), with off-track (3), tilt (24), and stuck-against-opponent (9) barely registering. That means something is being recovered on roughly <strong>45% of every decision cycle</strong> across the session, not as a rare edge case. Watching it live, this is what reads as a car "barely moving" for a stretch — not slow driving, but a tight loop of collapsing, teleporting back, and sometimes collapsing again almost immediately, interleaved with genuinely normal driving in between.</p>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-24</span><p>Re-read against the demo script: recoveries are counted <em>per car</em>, but control actions are counted once per step for both cars together. 3,755 recoveries in 8,310 control steps of a two-car session are 3,755 of 16,620 vehicle decisions, i.e. <strong>22.6%</strong> (0.45 recoveries per control step), not 45% of each car's decisions. The 99.0% height share is unaffected (raw output: off-track 3, tilt 24, height 3,719, stuck 9).</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Root cause, actually found</div>
+      <h3>It was the ground collision shape all along</h3>
+      <p>The "documented limitation" verdict above turned out to be premature. The user independently proposed re-examining the track rebuild itself rather than more reward tuning — exactly the one diagnostic step flagged back at the original discovery as never having been tried. Investigated concretely: the original working single-car stage builds its ground via Isaac Sim's own <code>World.scene.add_default_ground_plane()</code> helper; this racing stage's ground was a large scaled <em>Cube</em>, hand-authored directly in USD. Two differences fell out of reading that helper's source directly (<code>isaacsim/core/api/scenes/scene.py</code> and <code>objects/ground_plane.py</code>):</p>
+      <p><strong>Attempt 6 — physics material.</strong> The helper binds an explicit <code>PhysicsMaterial</code> (static/dynamic friction 0.5, restitution 0.8); the race stage's ground cube had no material bound at all. Added the identical material, rebuilt, reran the stress test. No change — same collapse to z=0.200, same timing. Ruled out.</p>
+      <p><strong>Attempt 7 — collision shape type.</strong> The helper's ground isn't a box at all — it calls <code>PhysicsSchemaTools.addGroundPlane()</code>, an <em>analytic</em> infinite plane. Replaced the finite Cube with that exact same call, kept the same physics material, rebuilt.</p>
+      <div class="callout fix"><span class="tag">Result</span><p>The stress test that had failed identically every single time — five car-side parameters, one ground material, always collapsing to z=0.200 by step 50–75 — came back clean: <strong>height error 0.000 across all 400 steps, both cars, run twice for confidence.</strong> Tested against the actual trained policy next (the same solo run that had measured 100% collapse, 79/79 recoveries): <strong>12 recoveries out of 510 actions (2.35%)</strong>, down from 100%. Telemetry showed continuous, smooth lapping across nearly the full track instead of a stall-and-teleport loop.</p></div>
+      <div class="callout verdict"><span class="tag">Revised conclusion</span><p>Root cause: PhysX's box-vs-cylinder (wheel) contact generation was unstable under sustained throttle against a finite box ground collider, in a way plane-vs-cylinder contact against an analytic plane is not. Not a car-side parameter, not a missing material — specifically the ground's collision <em>shape type</em>. This mostly fixes the bug rather than merely working around it; a small residual rate (~2.35%) remains, so the recovery net stays in as a safety margin, but it should fire dramatically less often now. Worth stating plainly: the "accepted as documented limitation" call earlier in this section was the right decision <em>given the evidence at the time</em> — six independent attempts (five car-side, one ground-material) had failed identically. It just wasn't the final word, and the fix came from questioning the track construction itself rather than any further reward or parameter tuning.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A combined change regresses</div>
+      <h3>Two variables, one round, a real setback</h3>
+      <p>The training stage itself turned out to have the identical box-ground bug as the deploy stage — every round of training up to this point had been running against the same collapse-prone physics, not just the live demo. Fixed it the same way, and in the same round also raised the centering-penalty weight per a separate request to prioritize staying near the middle of the track. The next 500k-step round came back clearly worse, not better: full-length rate crashed to 4–6% (from the high 70s before this round), average episode length fell from ~400 to ~150 steps, and peak reward went negative in every quartile.</p>
+      <div class="callout mistake"><span class="tag">Mistake</span><p>Changed two things that both shift the policy's distribution at once — a genuine physics change (box→plane ground contact behaves differently) and a reward-weight change — in the same round. The policy's fine motor control had spent millions of steps tuned to the old, glitchy ground contact; asked to re-adapt to both a new physics regime and a harsher reward simultaneously, it struggled far more than either change should have caused alone. No backup of the pre-round checkpoint existed either — the training script overwrites its one checkpoint unconditionally every run — so there was no way back, only forward.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Isolating the variables</div>
+      <h3>Fix one thing, hold the other steady, then recover</h3>
+      <p>Two more 1M-step rounds of "just keep training" on the same combined change made only partial progress (full-length rate crept from 2% to 8% and back down to 2% — a plateau, not a recovery). The actual fix was procedural: revert the reward-weight change back to its pre-regression value, keep the ground-plane physics fix, and let the policy re-adapt to only one distribution shift at a time. That round alone beat both prior "just keep training" rounds combined — full-length rate climbed every quartile (4%→12%) and set a new all-time peak reward. Separating a physics fix from a reward change recovered faster than changing both and hoping more training would sort it out.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Severe penalties, then an overcorrection</div>
+      <h3>How far is too far, for a per-step penalty</h3>
+      <p>At explicit request, to punish collisions and off-track drift as hard as possible: the one-time terminal off-track penalty was raised to its practical maximum (safe, since it pays only once per episode), and the per-step collision penalty was raised from 0.8 to 3.0 — deliberately kept below the 5.0 value already known to break training outright (earlier in this section). The very next round was the best of the entire recovery arc, full-length rate climbing to 53% with a new peak reward — but the two rounds after that declined steadily, full-length rate falling back to the mid-20s% and, for the first time anywhere in the recovery, failing to set a new peak reward at all.</p>
+      <div class="callout mistake"><span class="tag">Mistake</span><p>3.0 looked safe purely because it was under the known-broken 5.0 — but "not the exact value that broke it before" isn't the same as "safe." It reproduced the same runaway-suppression pathology, just more slowly: a policy discouraged this strongly from any sustained contact starts trading away genuine racing behavior to avoid the penalty, and it took two rounds of training data to show up clearly instead of one.</p></div>
+      <div class="callout fix"><span class="tag">Fix</span><p>Backed the collision penalty off to 1.5 — roughly double the original pre-experiment value, still meaningfully more severe than before, but with real headroom below the failure point. The very next round confirmed the correction: after a rough start still carrying the prior decline's momentum, it recovered mid-round back to the ~50% level, and every round since has held a consistent, high plateau.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Back to baseline, and past it</div>
+      <h3>The recovery arc closes</h3>
+      <p>Across the rounds following the collision-penalty correction, full-length rate climbed past the original pre-regression baseline (71–77%) for the first time since the regression, reaching 75–76% in one round and settling into a sustained 69–89%-per-quartile plateau over several more, with peak reward continuing to set new highs periodically (past 215) and mean reward turning solidly positive for most quartiles — something that had not happened anywhere earlier in this lineage. A fully sustained 90%+ across every quartile — the point where the recovery/reset net could plausibly be retired rather than just relied on less often — is close but not yet reached.</p>
+      <div class="callout fix"><span class="tag">Lesson kept</span><p>The near-total loss of the pre-regression checkpoint motivated adding real checkpoint versioning to the training script: every round now optionally saves a labeled backup alongside the live checkpoint, so a future regression can be rolled back to a specific known-good round instead of only ever training forward through the damage.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">The long plateau, and a step past it</div>
+      <h3>From "close to 90%" to the best round in the lineage's history</h3>
+      <p>Seventeen more 1,000,000-step rounds (run32 through run49, ~17M further steps, ~40M cumulative) held a noisy but genuinely elite plateau — round-average full-length rate mostly in the 80–91% band, with individual quartiles crossing 90% outright for the first time (run39: three consecutive quartiles above 90%, a first for this lineage, alongside a new peak reward of 221.6). The plateau kept climbing rather than flattening: run48 set new all-time records on every axis that matters — the highest single-quartile full-length rate ever recorded (93.2%) and the highest quartile mean reward ever recorded (147.3), with a round-average full-length rate above 91%.</p>
+      <div class="callout fix"><span class="tag">Lesson repeated</span><p>Round-to-round variance stayed real throughout — several rounds dipped mid-round to 60–70% full-length before recovering by their own final quartile, the same self-correcting shape seen earlier in the recovery arc. None of these dips were treated as regressions; only a round that failed to recover by its own end would have qualified, and none did across this whole stretch.</p></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="milestones">
+  <h2 class="section-head"><span class="idx">07</span> Closing milestone gaps</h2>
+  <p class="lede">A check against the original supervisor-issued milestone plan (literature review; Isaac Sim basics; a ROS-controlled car with tyre-slip physics; Isaac Lab task registration; training on complex scenarios with reward shaping, smooth driving, and generalization to unknown tracks) surfaced a real, previously undiscussed divergence: the actual RL work ended up on a custom Isaac Sim + stable-baselines3 pipeline rather than Isaac Lab's own framework, and no ROS integration exists anywhere in the project. That's a scope question for the supervisor, not something to resolve unilaterally — but two concrete gaps in the milestone plan's final stage were directly addressable without that conversation: a smooth-driving reward term, and generalization to an unknown track.</p>
+
+  <div class="timeline">
+    <div class="entry">
+      <div class="phase">Smooth driving, quantified</div>
+      <h3>An 18.6% reduction in action jitter, for real</h3>
+      <p>Added a per-step penalty on the single-car baseline (<code>car_track_env.py</code>) for how much consecutive throttle and steer commands change, at a modest weight (0.08) relative to the existing progress and centering terms — deliberately conservative, given the collision-penalty overcorrection above was a live reminder of how a new per-step penalty can misbehave if pushed too hard. Backed up the pre-change checkpoint first (this lineage had no versioning of its own). 250k steps of continued training held full-length rate at 96–99%, matching the original baseline almost exactly — the new penalty cost nothing in driving consistency.</p>
+      <div class="callout fix"><span class="tag">Result</span><p>Rather than trust that alone, ran both checkpoints — before and after the smoothness term — deterministically on the identical track and measured actual consecutive-action change directly. Mean action delta dropped from 1.0738 to 0.8744, an <strong>18.6% reduction</strong>, while both checkpoints held a perfect 100% full-length rate under deterministic evaluation. A real, directly measured improvement in control smoothness, not an inference from an absence of regression.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Generalization to an unknown track</div>
+      <h3>Survival transfers almost perfectly; the racing line does not</h3>
+      <p>The other open milestone item: does any of this generalize past the one track every round has ever trained on? Built a genuinely different layout — a 40m straight (2.5&times; the trained 16m), an 8m short straight, and 6m-radius corners tighter than any curvature the policy had ever driven, with the same track width so friction/dynamics stay comparable and the test isolates geometry specifically. Ran the current (run49) checkpoint deterministically, no further training, 15 pair-episodes on each track for a direct before/after comparison.</p>
+      <table class="spec">
+        <tr><th>Metric</th><th class="n">Trained track</th><th class="n">Unknown track</th></tr>
+        <tr><td>Full-length rate</td><td class="n">93.3%</td><td class="n">93.3%</td></tr>
+        <tr><td>Mean reward</td><td class="n">141.7</td><td class="n">&minus;155.5</td></tr>
+        <tr><td>Peak reward</td><td class="n">214.0</td><td class="n">9.2</td></tr>
+        <tr><td>Mean episode length</td><td class="n">473.3</td><td class="n">490.5</td></tr>
+      </table>
+      <div class="callout mistake"><span class="tag">Finding</span><p>Full-length rate is identical and mean episode length is if anything slightly higher on the unknown track — the coarse "stay near the centerline, don't leave the road" behavior transfers cleanly to geometry it has never seen. But reward collapses completely: the single best episode on the unknown track barely broke even, against a typical +140 on the trained track. The policy's fine-grained racing line — the efficient progress-vs-penalty balance reward actually measures — is heavily tuned to the specific curvature and straight lengths it trained on and does not transfer to a materially different layout, even though it never once loses control of the car.</p></div>
+      <div class="callout verdict"><span class="tag">Read for the write-up</span><p>Robust high-level track-following, brittle low-level control tuning — a genuine, quantified overfitting-to-geometry result, not a driving-quality failure.</p></div>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-25</span><p>Measured directly (race evaluation, §10), the zero-shot run49 policy drives the unknown track with flying laps of 23.87&nbsp;&plusmn;&nbsp;0.12&nbsp;s, only 8% slower than after three rounds of adaptation (22.05&nbsp;s). What differs is the line: on its own track it drives 0.07&nbsp;m from the centerline, on the unknown track 0.89&nbsp;m &mdash; weaving up to 2&nbsp;m on the 40&nbsp;m straights and running up to 3&nbsp;m wide in the 6&nbsp;m corners. With a centering weight of 0.9, that costs about 350 reward per episode, the size of the whole drop (297). The reward collapse is mostly the centering penalty, not a driving collapse; what did not transfer is the precise line.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Adapting to it directly</div>
+      <h3>One round nearly closes the whole gap</h3>
+      <p>Rather than leave the generalization gap as a standing limitation, continued training the same shared checkpoint directly on the new track's geometry — an 8-pair training stage built the same way as the original, same architecture, same reward, same shared network, just a different road under it. Run49's ~40M-step weights (and the entire original-track lineage) stay safely backed up regardless of how this goes.</p>
+      <table class="spec">
+        <tr><th>Round</th><th class="n">Full-length rate (by quartile)</th><th class="n">Mean reward (by quartile)</th><th class="n">Peak reward</th></tr>
+        <tr><td>Zero-shot (no training)</td><td class="n">93.3% flat</td><td class="n">&minus;155.5 flat</td><td class="n">9.2</td></tr>
+        <tr><td>newtrack_run1 (+1M steps)</td><td class="n">90.3 &rarr; 93.0 &rarr; 98.4 &rarr; 97.7</td><td class="n">&minus;109.2 &rarr; &minus;45.5 &rarr; 60.3 &rarr; 73.5</td><td class="n">155.7</td></tr>
+        <tr><td>newtrack_run2 (+1M steps)</td><td class="n">91.2 &rarr; 90.1 &rarr; 91.4 &rarr; 97.1</td><td class="n">41.9 &rarr; 28.2 &rarr; 30.3 &rarr; 75.8</td><td class="n">164.4</td></tr>
+      </table>
+      <div class="callout fix"><span class="tag">Result</span><p>One round of dedicated adaptation already recovered most of the reward gap the generalization test found, and full-length rate climbed past even the trained-track baseline (up to 98.4% in a single quartile). A second round held that level and kept climbing. The underlying driving skill wasn't gone on the new track — it just needed a comparatively small, targeted top-up to re-tune to the new curvature and straight lengths, rather than the multi-million-step recovery the earlier ground-physics regression (&sect;6) required.</p></div>
+      <div class="callout fix"><span class="tag">Note 2026-09-25</span><p>Measured after newtrack_run3: flying laps of 22.05&nbsp;&plusmn;&nbsp;0.05&nbsp;s at a mean offset of 0.16&nbsp;m, slightly on the inside of the corners (+0.28&nbsp;m) &mdash; faster than the 22.3&nbsp;s the 6&nbsp;m/s top speed allows on the centerline.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Retiring the recovery net</div>
+      <h3>What the raw policy does once it's actually good</h3>
+      <p>With full-length rates now consistently in the 85&ndash;98% range on both tracks, dropped the demo's teleport-back safety net entirely (kept only as a diagnostic counter, matching the same experiment run once before in &sect;6 at a much earlier, far less converged stage). The off-track/tilt/stuck failure modes are now rare enough that the policy gets a real chance to self-correct instead of always being reset; the still-unresolved chassis-collapse bug (&sect;6) will still occasionally leave a car stuck for the rest of a session, since that's a physics limitation, not a driving one. Watched live on the new track's checkpoint with the net off: no teleporting, no visible reliance on it.</p>
+    </div>
+  </div>
+</section>
+
+<section id="comparisons">
+  <h2 class="section-head"><span class="idx">08</span> Two comparison points: a classical controller, and a racing line</h2>
+  <p class="lede">Two questions worth answering before treating "pure RL, from scratch" as the only story: does a hand-engineered non-learning controller do just as well on this exact track (i.e., is the task itself easy enough that learning isn't buying much), and does loosening the reward's grip on the centerline let a policy find a genuinely faster line rather than just a more stable one?</p>
+
+  <div class="timeline">
+
+    <div class="entry">
+      <div class="phase">Classical baseline</div>
+      <h3>Pure pursuit, no learning at all</h3>
+      <p>A geometric pure-pursuit controller (<code>pure_pursuit_baseline.py</code>) — aim at a fixed lookahead point on the centerline, steer with the standard bicycle-model curvature formula, throttle toward a corner-aware target speed — driven on the identical track and Articulation the accepted RL baseline trained on, with zero training and zero learned parameters. 40/40 episodes ran full length, average reward 108.70 (range 98.47–114.97) — statistically indistinguishable from the RL policy's converged 105–113. On this specific track and reward, a correctly-tuned classical controller matches reinforcement learning outright; the interesting comparison for the thesis isn't "does RL beat a classical baseline" here, it's what RL buys when the task gets harder than a single well-behaved car on a known track — multi-agent racing (§6) being exactly that harder case.</p>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-24</span><p>No statistical test was run, so "statistically indistinguishable" should read "similar in reward". More importantly, reward hides a large difference in speed. On a common physical metric (flying laps along the road centerline, 20 seeded runs, deterministic), pure pursuit laps in <strong>51.4&nbsp;s</strong>, the 450k RL baseline in 73.9&nbsp;s and the 700k smoothness policy in 60.6&nbsp;s; pure pursuit also never left the track (RL: 7 and 2 of 20 runs, all after the 500-step training horizon). See §10.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Racing-line reward variant</div>
+      <h3>Letting the curbs do the bounding, not the reward</h3>
+      <p>A new single-car lineage (<code>car2_racingline_ppo_model.zip</code>), architecturally identical to the parallel + curvature-look-ahead policy in §5, but with the lateral-centering penalty loosened 6× (0.6 → 0.1) and the throttle bonus raised (0.25 → 0.4) — the physical curbs, not the reward term, now do the work of keeping the car on the track, freeing the policy to use the full track width like an actual racing line if that's faster.</p>
+      <table class="spec">
+        <tr><th>Quartile</th><th class="n">Avg reward</th><th class="n">Full-length rate</th></tr>
+        <tr><td>Q1</td><td class="n">73.6</td><td class="n">50%</td></tr>
+        <tr><td>Q2</td><td class="n">133.2</td><td class="n">92%</td></tr>
+        <tr><td>Q3</td><td class="n">178.9</td><td class="n">96%</td></tr>
+        <tr><td>Q4</td><td class="n">187.6</td><td class="n">96%</td></tr>
+      </table>
+      <div class="callout fix"><span class="tag">Result</span><p>Converged cleanly over 300k steps with no instability at any point — final episodes in the run scored 127–215, all full length. This <strong>beats the centerline-following baseline outright</strong> (187.6 avg vs. 105–113) while matching its consistency, not trading one for the other. The clearest sign yet that the centering penalty in the original reward was leaving real speed on the table rather than being necessary for stability.</p></div>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-24</span><p>This result does not hold. The 187.6 average was not earned by driving: this lineage trained on the same box-ground stage as §5, and a collapsed, stationary car holding full throttle collects 0.4 &times; 500 = 200 per episode from the throttle bonus alone &mdash; one replayed clone moved 0.02&nbsp;m and scored 198.4. On the training stage, all 20 evaluation runs collapsed. The reward therefore says nothing about whether the racing line is better, and "beats the baseline outright" is withdrawn. (Measured on corrected physics, the same network does drive fast &mdash; 21.3&nbsp;s laps at 5.8&nbsp;m/s &mdash; even though it was never trained on that physics; in a re-run race against the self-play policy it is about 0.5% faster, not 19% &mdash; see the re-run below and §10.)</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Head to head — the user's idea</div>
+      <h3>Racing line vs. self-play RL, on the same track</h3>
+      <p>With both a fast single-car policy (the racing-line variant above) and a policy that has actually learned to race an opponent (§6), the natural experiment is to put them on the track together — one car driven by the racing-line policy (blind to the opponent, exactly as it trained), the other by the self-play racing policy (aware of the opponent via its 3 opponent-relative observation dimensions) — and measure who actually wins: raw speed with no opponent model, versus a policy that has learned positioning around another car. Both share identical track geometry, action cadence, and physics constants, confirmed line-by-line across the environment files first, so this is a fair fight, not a transfer-learning question. Built as <code>race_mixed_policy_eval.py</code>: runs both policies headless on the two-car deploy stage for a fixed 5,000-control-step heat, tracking cumulative distance traveled (unwrapped past lap boundaries) rather than reward, since reward isn't comparable across the two lineages' different reward functions.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Heat 1</div>
+      <h3>A narrow win for the opponent-aware policy</h3>
+      <p>Racing-line in the first physical lane, self-play racing in the second: <strong>372.75m</strong> vs <strong>382.21m</strong> over the heat (2.94 vs 3.02 laps) — self-play ahead by 9.46m (2.5%), leading 74.6% of all control steps. A plausible story on its face: opponent-awareness edges out raw speed.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Heat 2 — swap the lanes</div>
+      <h3>The story didn't survive a swap</h3>
+      <p>Repeated with the two policies driving the <em>opposite</em> physical lane, as a check against the lane-spawn bias already seen once in §6 ("Car B seems to be winning"). The result reversed completely: racing-line <strong>336.03m</strong> vs self-play <strong>212.89m</strong> — racing-line ahead by 123.14m (58%), leading 93.5% of control steps. Recovery-net triggers (the chassis-collapse workaround from §6) were also much higher in this heat for both cars (995 and 1091 out of 5,000 control steps, vs 664 and 623 in heat 1) — this specific pairing stressed the unresolved physical bug noticeably more.</p>
+      <div class="callout mistake"><span class="tag">Finding</span><p>A single head-to-head heat is not a reliable measurement here. Whichever policy happened to be in the second physical lane won <em>both</em> times, by very different margins — lane placement and collision/recovery interaction dynamics dominate the outcome at least as much as either policy's driving quality.</p></div>
+      <div class="callout verdict"><span class="tag">Conclusion</span><p>The defensible number is each policy's distance summed across <em>both</em> lane assignments, which cancels the lane bias: racing-line 708.78m total vs self-play 595.10m total — racing-line covers about 19% more ground overall. That lines up with its much higher solo reward (187.6 vs the racing lineage's ~106–112) and suggests raw speed still wins out here once lane bias is controlled for; opponent-awareness didn't translate into a clear competitive edge in this test. Just as valuable as the result itself: naive single-heat agent-vs-agent evaluation can be dominated by confounds unrelated to policy quality, even in a case this simple — a methodology point worth citing in its own right.</p></div>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-24</span><p>Both heats ran on 2026-09-19 before the ground-plane fix of the deploy stage, against an early (~5&nbsp;M-step) self-play checkpoint, and were dominated by collapse recoveries (623&ndash;1,091 per car). Re-run on the fixed stage against the final original-track checkpoint (run49): with the same recovery net, racing-line 3,644&nbsp;m vs. self-play 3,655&nbsp;m over both lane assignments; without it, 3,275&nbsp;m vs. 3,273&nbsp;m. Over 20 heats from random start positions, the racing-line car finished ahead in 17; in the 16 heats without an incident it covered 0.5% more distance. The "19% more distance" is withdrawn; the real margin is about 0.5%. See §10.</p></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="redesign">
+  <h2 class="section-head"><span class="idx">09</span> Reward redesign: speed, competition, and smoothness</h2>
+  <p class="lede">§7 left the new-track adaptation two rounds in, already most of the way back to par. Ten more rounds (newtrack_run3&ndash;12, ~10M further steps) closed the rest of that gap and then went past it &mdash; full-length rate reached 100% in places and peak reward crossed 200, matching or beating the original-track lineage's own best numbers. That should have been the end of the story. It wasn't: the aggregate metrics kept climbing while the actual driving quietly got worse in ways full-length rate and mean reward don't measure at all, and finding that gap &mdash; and closing it &mdash; is the subject of this section.</p>
+
+  <div class="timeline">
+
+    <div class="entry">
+      <div class="phase">A feature built to answer a suspicion</div>
+      <h3>Ten laps, timed, per car, before trusting a demo impression</h3>
+      <p>Requested directly: a start/finish line and a 10-lap timing benchmark per car, so speed could be checked as a number instead of a live-demo impression. <code>lap_time_benchmark.py</code> drives both cars deterministically on the deploy stage to a fixed lap count, detecting a completed lap purely from crossing another whole multiple of cumulative unwrapped centerline progress &mdash; not from any visual line on the ground, a distinction that matters later in this section. Physics-step counts convert to simulated seconds via the same <code>PHYSICS_DT &times; ACTION_REPEAT</code> the environment itself uses, so lap times are directly comparable to real elapsed sim-time.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">The number the aggregate metrics were hiding</div>
+      <h3>A real 15% slowdown, invisible to full-length rate and mean reward</h3>
+      <p>Benchmarked three checkpoints along the newtrack_run3&rarr;12 arc. The trend ran the wrong way entirely: laps got slower even as the training monitor's own numbers kept improving.</p>
+      <table class="spec">
+        <tr><th>Checkpoint</th><th class="n">Car A mean lap</th><th class="n">Car B mean lap</th></tr>
+        <tr><td>newtrack_run3 (baseline)</td><td class="n">22.43s</td><td class="n">22.31s</td></tr>
+        <tr><td>newtrack_run12</td><td class="n">25.82s</td><td class="n">25.76s</td></tr>
+      </table>
+      <div class="callout mistake"><span class="tag">Finding</span><p>A ~15% slowdown developed over runs 6&ndash;12 while full-length rate and mean reward climbed the entire time. The explanation is structural, not a bug: episode survival dominates the reward signal far more than per-step distance covered, so a policy can drift toward cautious, low-throttle driving and still look like it's improving on every metric being watched &mdash; a genuine reward-proxy-vs-actual-goal mismatch, and a citable one, since it was caught by measuring the actual target (lap speed) directly rather than trusting the training curve.</p></div>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-25</span><p>"Mean reward climbed the entire time" overstates it: the last-quarter mean reward of run12 (119.4) was below that of run3 (143.5), within the round-to-round noise; the best episodes did keep rising (184.6&nbsp;&rarr;&nbsp;201.7) and full-length rate stayed high. From random starts (race evaluation) the slowdown is 6.7% (23.52 vs. 22.05&nbsp;s) rather than 15%; in the fixed-start benchmark the two cars drove nose to tail. The race evaluation also found that the mean action delta had risen from 0.042 to 0.141 by run12.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A second complaint, from watching, not measuring</div>
+      <h3>"One car just follows the other"</h3>
+      <p>Live-demo observation on the same run12 checkpoint: the two cars weren't racing so much as convoying, one consistently trailing the other rather than contesting position. The cause traced cleanly to the reward's own design: neither car's score depended at all on its position <em>relative to its opponent</em> &mdash; only individual progress plus the shared collision-avoidance penalty from &sect;6. With nothing to gain by contesting the lead, self-play had converged to a safe follow-the-leader equilibrium instead of an adversarial one.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Two conservative fixes, one training arc</div>
+      <h3>More throttle, and something to actually fight over</h3>
+      <p>Two changes, in one round, both kept deliberately modest against the project's own repeated lesson (the &sect;6 <code>COLLISION_PENALTY=5.0</code> incident) that an oversized new per-step term reliably breaks training: <code>THROTTLE_BONUS_WEIGHT</code> doubled (0.15&rarr;0.30) to push back against the low-throttle drift, and a new <code>OVERTAKE_INCENTIVE_WEIGHT=0.3</code> rewarding a car for gaining ground on its opponent each step &mdash; computed from the change in the existing opponent-progress-gap observation feature, so the two cars in a pair always get exactly opposite-signed values. Zero-sum by construction: it redistributes reward toward contested racing rather than inflating the total budget, which is precisely what kept it safe at this weight.</p>
+      <div class="callout fix"><span class="tag">Result</span><p>Two rounds (newtrack_overtake_run1&ndash;2, ~2M steps) showed no sign of the runaway-suppression pattern &mdash; full-length rate held 93&ndash;99% throughout, and worst-case reward outliers <em>improved</em>. Re-benchmarked on run2: 23.75s / 23.70s mean laps &mdash; about two-thirds of the way back from the 25.8s regression toward the 22.4s baseline. Partial, not full, recovery.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A new problem, caused by the fix for the old one</div>
+      <h3>Faster and more competitive, also jerkier</h3>
+      <p>Watching the overtake-fix demo surfaced a third complaint: visibly jerky driving. Both new terms reward bursty control &mdash; hard acceleration to close a gap, sharp braking into a corner &mdash; and nothing in this reward penalized the resulting throttle/steer whiplash, unlike the single-car baseline, which had already solved exactly this problem once (&sect;7) with a measured 18.6% reduction in action jitter. Mirrored that fix exactly: <code>SMOOTHNESS_PENALTY_WEIGHT=0.08</code>, penalizing the per-step change in consecutive throttle and steer commands, at the identical weight that had already been proven safe on the single-car lineage.</p>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-25</span><p>The jerkiness was not caused by the two new terms. The action delta after newtrack_overtake_run2 (0.124) was no higher than after newtrack_run12 (0.141), before either term existed; it had built up unnoticed during the plain adaptation rounds. The smoothness term did reduce it (0.087 after smooth_run1, 0.064 after smooth_run20).</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">The smoothness arc, and an elite regime that held</div>
+      <h3>From "no jitteriness" to the best rounds this lineage has ever run</h3>
+      <p>The very next round's demo drew a direct, positive confirmation: "looks impressive no jitterness as of now." Training continued round over round (newtrack_smooth_run1&ndash;34 at the time of this writing, well past 85M cumulative steps for the whole two-car lineage) with occasional ordinary noise &mdash; a handful of rounds dipped mid-run and self-corrected by their own final quartile, the same shape seen throughout the &sect;6 recovery arc, never treated as a regression because none of them failed to recover. Starting around run18, the lineage stepped into a genuinely new regime: three consecutive perfect (100%) full-length quartiles, a new all-time peak reward of 233, and the per-quartile <em>minimum</em> reward barely dipping negative &mdash; meaning nearly every single episode, not just the average, was racing well. That level held, not just spiked once: runs 18&ndash;33 stayed in a 90&ndash;100% full-length / roughly 140&ndash;233 reward band, the most consistent stretch in the lineage's history.</p>
+    
+      <div class="callout mistake"><span class="tag">Correction 2026-09-25</span><p>Elite training statistics, not better driving. Measured directly, smooth_run35 laps in 22.58&nbsp;s, but 4 of its 24 cars left the track in the long heats, all after more than 1,000 control steps (beyond the 500-step training episode), and its action delta was back up to 0.103: the smoothness effect faded after smooth_run20 (0.064).</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A stall, caught once, watched for, never seen again</div>
+      <h3>Two cars, bogged down together, for two minutes</h3>
+      <p>The first post-smoothness-fix benchmark (run1) was mostly excellent &mdash; clean laps at 23.06s/22.85s, matching the pre-regression baseline &mdash; except for one shared incident: Car A's laps 5&ndash;6 and Car B's lap 5 all ballooned to 55&ndash;125 seconds, their timestamps overlapping almost exactly, before both cars snapped back to normal ~22s pace for the rest of the race. Plausible mechanism: the overtake incentive rewards contesting position, which can occasionally produce a mutual blocking standoff instead of a clean pass, rather than a clean overtake.</p>
+      <div class="callout verdict"><span class="tag">Verdict</span><p>Treated as a watch item rather than a fix-immediately bug, per explicit instruction to keep training and watch for a recurrence. It never recurred &mdash; the very next benchmark (run2) and every one since (including run33, well into the elite regime) came back clean, worst-case laps within a few seconds of the mean. One training round did show three unusually severe single-episode reward outliers where earlier rounds had shown at most one, but the very next round dropped back to zero, and full-length rate never wavered through any of it. Reads as a rare, non-systemic interaction rather than a standing flaw in the overtake term.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A qualitative report that the numbers contradicted</div>
+      <h3>"I feel some jitteriness is back" &mdash; measured, and it wasn't</h3>
+      <p>After several more rounds (run20, deep in the elite regime), a live demo drew the opposite report to run1's: jitteriness felt like it had returned. Rather than accept or dismiss that on impression alone, built <code>compare_two_car_smoothness.py</code> &mdash; the same mean-consecutive-action-delta methodology the single-car baseline's own smoothness measurement used (&sect;7) &mdash; and ran it head-to-head against the run1 checkpoint the user had explicitly called jitter-free.</p>
+      <table class="spec">
+        <tr><th>Checkpoint</th><th class="n">Mean action delta</th><th class="n">Car A</th><th class="n">Car B</th></tr>
+        <tr><td>newtrack_smooth_run1</td><td class="n">0.0986</td><td class="n">0.1081</td><td class="n">0.0890</td></tr>
+        <tr><td>newtrack_smooth_run20</td><td class="n">0.0726</td><td class="n">0.0664</td><td class="n">0.0789</td></tr>
+      </table>
+      <div class="callout fix"><span class="tag">Result</span><p>Run20 measured <strong>26.3% smoother</strong> than run1, the opposite of the complaint. Instrumented the demo script with live per-step action-delta logging to a CSV, timestamped, so any future recurrence could be pinned to an exact moment rather than argued from memory &mdash; then re-ran the demo on the same checkpoint. The user watched and said "it doesnt happen now." The logged run's numbers matched the quantitative comparison (mean delta 0.109 across 11,490 samples, no anomalous spike).</p></div>
+      <div class="callout verdict"><span class="tag">Read for the write-up</span><p>The most likely explanation is a one-off perceptual moment &mdash; plausibly a brief contested-overtake exchange, which the reward data confirms happens far more often now than at run1's much lower reward level &mdash; rather than any actual regression. The methodology point stands on its own regardless of the specific cause: a qualitative demo impression, even a specific and confidently stated one, isn't itself evidence of a policy change, and the same directly-measured-delta technique that validated the original smoothness fix (&sect;7) is exactly the tool that should arbitrate a disputed one.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A decoration that was never where it claimed to be</div>
+      <h3>The checkered line sat 40 meters from where the cars actually start</h3>
+      <p>A late, unrelated report while watching a demo: no line visible at the start position, only at what looked like the finish. The checkered start/finish tiles (added for the lap-timing feature above) were placed at <code>points[0]</code> &mdash; wherever the centerline-generation math happens to begin its list &mdash; while <code>build_car()</code> spawns both cars at a separately hardcoded <code>(0.0, &plusmn;1.5)</code>. On this stadium-shaped track those two points sit on opposite long straights, roughly 40 meters apart, so the line was never at the actual start; a car would only ever cross it partway through a lap, which is exactly what looked like "only the finish has it."</p>
+      <div class="callout mistake"><span class="tag">Mistake</span><p>The line was purely a visual decoration from the start &mdash; lap detection (the number that actually matters) has always worked from cumulative progress delta, never from physically crossing the drawn tiles &mdash; so this never once touched a training number, a benchmark result, or any reward. It sat unnoticed for the entire lap-timing arc above simply because nobody had watched for exactly where it was relative to where the cars pull away.</p></div>
+      <div class="callout fix"><span class="tag">Fix</span><p>Replaced the hardcoded <code>points[0]</code> reference with the centerline segment nearest the cars' actual spawn coordinate, rebuilt the stage, and re-verified live. The multi-pair training stage never had this line at all (headless-only, never rendered), so nothing there needed touching.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Elite by every number, still not a race</div>
+      <h3>The metrics kept climbing; the actual complaint didn't move</h3>
+      <p>By run35, the smoothness arc had pushed this lineage to its best-ever numbers on every quartile metric &mdash; full-length rate at or above 98% in places, mean reward past 200, lap times back at parity with the pre-regression baseline. None of that answered the question the overtake incentive was originally added to fix (this section, above: "one car just follows the other"). Watching a fresh demo of the latest checkpoint, the report was blunt: "car a never overtakes car b, car b always wins the battle." A policy can be excellent by every aggregate training metric and still not look like a real race.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A second, more cautious turn of the same knob</div>
+      <h3>Doubling the overtake incentive, this time only halfway</h3>
+      <p><code>OVERTAKE_INCENTIVE_WEIGHT</code> raised again, 0.3&rarr;0.5 &mdash; deliberately kept below a full doubling this time, since the same style of escalation on <code>COLLISION_PENALTY</code> earlier in this section (0.8&rarr;3.0) had needed walking back after two rounds of quiet overcorrection. Six further rounds (newtrack_compete_run1&ndash;6, ~6M steps) followed, continuing from the same checkpoint:</p>
+      <table class="spec">
+        <tr><th>Round</th><th class="n">Full-length rate (quartile range)</th><th class="n">Mean reward (quartile range)</th><th class="n">Peak reward</th></tr>
+        <tr><td>run1</td><td class="n">98.4 &ndash; 100.0%</td><td class="n">197.7 &ndash; 209.1</td><td class="n">260.0</td></tr>
+        <tr><td>run2</td><td class="n">98.0 &ndash; 99.2%</td><td class="n">191.0 &ndash; 202.7</td><td class="n">262.3</td></tr>
+        <tr><td>run3</td><td class="n">92.1 &ndash; 99.2%</td><td class="n">130.4 &ndash; 189.6</td><td class="n">252.4</td></tr>
+        <tr><td>run4</td><td class="n">96.1 &ndash; 96.8%</td><td class="n">133.5 &ndash; 163.4</td><td class="n">266.5</td></tr>
+        <tr><td>run5</td><td class="n">99.2 &ndash; 99.6%</td><td class="n">173.0 &ndash; 192.4</td><td class="n">257.4</td></tr>
+        <tr><td>run6</td><td class="n">96.8 &ndash; 99.6%</td><td class="n">161.4 &ndash; 205.5</td><td class="n">266.5</td></tr>
+      </table>
+      <div class="callout fix"><span class="tag">Result</span><p>No destabilization at any point &mdash; full-length rate never left a 92&ndash;100% band across all six rounds, and peak reward set a new all-time high for the whole two-car lineage twice (266.5, up from the smoothness arc's 233). The zero-sum construction of this term (§9, above) held up under a second increase exactly as it had under the first.</p></div>
+      <div class="callout mistake"><span class="tag">Correction 2026-09-25</span><p>Stable, but not competitive. In the race evaluation, the final checkpoint (compete_run6) raced 12 heats with 0 lead changes: the car starting on the inside led after the first corner and then kept a nearly constant gap of about 11&nbsp;m. The final policy laps in 22.63&nbsp;s (22.05&nbsp;s at newtrack_run3) with an action delta of 0.120 (0.042): the redesign undid the run12 regression but did not improve on run3. Why the incentive could not produce racing: §10.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">The benchmark said the same thing the demo did</div>
+      <h3>Car B, ten laps out of ten</h3>
+      <p>Ran <code>lap_time_benchmark.py</code> on the run4 checkpoint to check the "car B always wins" impression as a number rather than an impression. Car B won every single lap, 10 of 10 &mdash; 231.93s total vs Car A's 234.87s, a 2.93s gap (0.29s/lap average). Every earlier benchmark on this lineage (§9, above) had shown a near-dead-heat margin of 0.04&ndash;0.2s/lap; this one was noticeably larger and, more importantly, perfectly one-sided.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">A test built to settle it: swap the starting spots</div>
+      <h3>The same confound from §8, caught a second time</h3>
+      <p>Wrote a one-off diagnostic (mirroring <code>lap_time_benchmark.py</code> exactly, but swapping Car A and Car B's starting world poses right after the stage loads) and re-ran the same benchmark. Whichever car now sat in Car B's original spawn spot won again &mdash; 2.33s total, 0.23s/lap, matching the original gap almost exactly with the winning label flipped.</p>
+      <div class="callout mistake"><span class="tag">Finding</span><p>The win moved with the physical spawn point, not with the car. This is the identical confound already caught once in §8's head-to-head test &mdash; a fixed, unrandomized starting position dominating an outcome that looked like it was about policy quality &mdash; recurring in a different script that had simply never been checked for it. <code>build_unknown_track_deploy.py</code> spawns Car A and Car B at two fixed coordinates, (0,&minus;1.5) and (0,1.5), identically every single demo and benchmark run; one lateral line is evidently mildly favorable into the track's first corner, so whichever car lands there wins deterministically, every time, regardless of actual driving skill &mdash; both cars share one identical policy network.</p></div>
+      <div class="callout mistake"><span class="tag">Note 2026-09-25</span><p>Position B, (0,&nbsp;+1.5), is on the inside of the first corner: the cars drive counterclockwise seen from above, so every corner is a left turn. In 6 of the 8 benchmarks run on this stage, the car in position B was ahead at every one of the ten lap lines; the only lead changes happened during the smooth_run1 stall and once in lap&nbsp;2 of smooth_run2.</p></div>
+      <div class="callout fix"><span class="tag">Fix</span><p>Added a 50/50 coin flip to both <code>run_unknown_track_demo.py</code> and <code>lap_time_benchmark.py</code>, right after the cars initialize: on a hit, their starting poses and velocities are swapped, so which car occupies the favorable spot is no longer deterministic run-to-run. The track geometry and spawn points themselves are untouched &mdash; that asymmetry is real, not a bug &mdash; only which label lands on which side is now randomized. Verified immediately: a fresh benchmark run after the fix had Car A win, where it had been Car B every single time before. Training itself was never affected by any of this &mdash; it already randomizes spawn segment and side every episode &mdash; so none of the run1&ndash;6 numbers above need re-reading; this was purely a gap in the evaluation tooling, not in what was being evaluated.</p></div>
+    </div>
+
+  </div>
+</section>
+
+<section id="corrections">
+  <h2 class="section-head"><span class="idx">10</span> Corrections after physical re-evaluation</h2>
+  <p class="lede">While writing the thesis, every headline number was re-checked against the logs and, where the training reward was the only evidence, against direct physical measurements. Two lineages turned out to have been scored by a simulator defect rather than by their driving, one head-to-head result did not survive a clean re-run, and a race evaluation of the two-car checkpoints showed that the cars never actually raced.</p>
+
+  <div class="timeline">
+
+    <div class="entry">
+      <div class="phase">A common metric for all single-car controllers</div>
+      <h3>Rewards from different reward functions cannot be compared</h3>
+      <p>The single-car lineages were trained on different reward functions (centering weight 0.6 vs. 0.1, throttle bonus 0.25 vs. 0.4, with or without a smoothness term), so their rewards say nothing about which one drives better. <code>common_metric_eval.py</code> measures every controller with the same physical quantities: flying-lap time and speed along the physical road centerline, lateral offset, off-track and collapse events, and action smoothness &mdash; deterministically, from 20 seeded random starts, for up to 3 laps or 2,500 control steps.</p>
+      <table class="spec">
+        <tr><th>Controller</th><th>Ground</th><th class="n">Flying lap</th><th class="n">Mean speed</th><th class="n">Off-track runs</th><th class="n">Runs with collapse</th></tr>
+        <tr><td>Pure-RL baseline, 450k</td><td>plane</td><td class="n">73.9 s</td><td class="n">1.37 m/s</td><td class="n">7 / 20</td><td class="n">0</td></tr>
+        <tr><td>Baseline + smoothness, 700k</td><td>plane</td><td class="n">60.6 s</td><td class="n">1.87 m/s</td><td class="n">2 / 20</td><td class="n">0</td></tr>
+        <tr><td>Pure pursuit (no learning)</td><td>plane</td><td class="n">51.4 s</td><td class="n">2.46 m/s</td><td class="n">0 / 20</td><td class="n">0</td></tr>
+        <tr><td>Vec + curvature</td><td>box (as trained)</td><td class="n">&ndash;</td><td class="n">0.20 m/s</td><td class="n">3 / 20</td><td class="n">17</td></tr>
+        <tr><td>Racing-line</td><td>box (as trained)</td><td class="n">&ndash;</td><td class="n">0.13 m/s</td><td class="n">0 / 20</td><td class="n">20</td></tr>
+        <tr><td>Vec + curvature</td><td>plane (swapped in)</td><td class="n">&ndash;</td><td class="n">1.47 m/s</td><td class="n">20 / 20</td><td class="n">0</td></tr>
+        <tr><td>Racing-line</td><td>plane (swapped in)</td><td class="n">21.3 s</td><td class="n">5.82 m/s</td><td class="n">0 / 20</td><td class="n">0</td></tr>
+      </table>
+      <div class="callout mistake"><span class="tag">Finding</span><p>The pure-pursuit controller that "matched" RL in reward (§8) is clearly the fastest of the controllers trained and evaluated on the working single-car stage. The smoothness term (§7) made the RL baseline not only smoother but 18% faster per lap.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Why two lineages looked so good</div>
+      <h3>A collapsed car at full throttle is paid for standing still</h3>
+      <p>The vec + curvature (§5) and racing-line (§8) lineages both trained on <code>vec_train_car2.usd</code>. That stage was built before the chassis-collapse root cause was found (§6) and still uses the finite box ground collider; unlike the two-car stages, it was never rebuilt. <code>collapse_reward_diagnostic.py</code> replays one 500-step training episode per clone with the training reward function. On the box, the racing-line policy spends 68&ndash;79% of all steps collapsed and still scores 190&ndash;206 per episode, because the throttle bonus pays for the <em>command</em>, not for motion, and a collapsed car never leaves the track. One clone moved 0.02&nbsp;m and scored 198.4; the reported training average was 187.6. The vec + curvature clones that barely moved scored 113&ndash;121, matching its reported peak of 121.9.</p>
+      <div class="callout verdict"><span class="tag">Read for the write-up</span><p>A textbook case of a reward being satisfied without the intended behavior: the throttle bonus (up to 0.4 per step) is as large as the maximum progress reward (0.4 m per step at 6 m/s). With the box swapped for the analytic plane, the vec + curvature policy leaves the track in every run; the racing-line policy, surprisingly, drives very fast (21.3 s laps, 97% of top speed) &mdash; presumably learned from the seconds of normal driving at the start of each episode, before the chassis collapsed. Neither training reward is evidence of anything.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">An evaluation bug of my own</div>
+      <h3>The vec policy was first evaluated driving the wrong way</h3>
+      <p>The first common-metric run imported the current <code>car_track_vec_env.py</code>, which contains the reversal added for the "make it clockwise" demo (§5) after that policy had been trained. The vec policy was therefore evaluated against its training direction. Re-run in its training direction, the conclusion is the same (off the track within 43&ndash;53 steps on the plane), but the evidence is now valid. Both scripts now restore each lineage's own point order.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">The head-to-head, re-run</div>
+      <h3>On fixed physics: about 0.5%, not 19%</h3>
+      <p>The §8 heats ran on the box-ground deploy stage, hours before its fix, against an early self-play checkpoint. <code>head_to_head_eval.py</code> repeats them on the fixed <code>race_deploy.usd</code> (analytic plane) against the final original-track self-play checkpoint (run49, 40.09&nbsp;M steps), with the same 5,000-step heats and lane swap, once with and once without the recovery net, plus 20 shorter heats (1,500 control steps, 100&nbsp;s) from random start positions, each start raced once per lane assignment.</p>
+      <table class="spec">
+        <tr><th>Heat</th><th class="n">Lane RL / SP</th><th class="n">Racing-line</th><th class="n">Self-play</th><th class="n">Flying lap RL / SP</th><th class="n">Bad-state steps RL / SP</th><th class="n">Contact steps</th><th>Ahead</th></tr>
+<tr><td>Heat 1, recovery net on</td><td class="n">A / B</td><td class="n">1659 m</td><td class="n">1673 m</td><td class="n">24.75 / 24.59 s</td><td class="n">239 / 253</td><td class="n">470</td><td>self-play</td></tr>
+<tr><td>Heat 2 (lanes swapped), net on</td><td class="n">B / A</td><td class="n">1985 m</td><td class="n">1982 m</td><td class="n">21.13 / 21.07 s</td><td class="n">0 / 0</td><td class="n">0</td><td>racing-line</td></tr>
+<tr><td>Heat 1, net off</td><td class="n">A / B</td><td class="n">1290 m</td><td class="n">1291 m</td><td class="n">32.58 / 32.57 s</td><td class="n">8 / 0</td><td class="n">0</td><td>self-play</td></tr>
+<tr><td>Heat 2 (lanes swapped), net off</td><td class="n">B / A</td><td class="n">1985 m</td><td class="n">1982 m</td><td class="n">21.13 / 21.07 s</td><td class="n">0 / 0</td><td class="n">0</td><td>racing-line</td></tr>
+      </table>
+      <p>Over both lane assignments, racing-line 3,644&nbsp;m vs. self-play 3,655&nbsp;m with the recovery net, and 3,275&nbsp;m vs. 3,273&nbsp;m without it &mdash; a dead heat. In the random-start series (20 heats of 100&nbsp;s), the racing-line car finished ahead in 17 and the self-play car in 3. In the 16 heats without an incident, the racing-line car finished ahead in 14 and covered on average 0.5% more distance. The self-play car left the track in 3 heats and the racing-line car in 2, each time shortly after the two cars had come close to each other.</p>
+      <div class="callout mistake"><span class="tag">Finding</span><p>Both policies drive at essentially the car's top speed (flying laps of about 21&nbsp;s on a 126.8&nbsp;m track, 6&nbsp;m/s maximum), so the difference between them is small: in clean racing the racing-line car is about 0.5% faster, plausibly because its weak centering penalty lets it use the track width, whereas the self-play policy was trained to stay near the centerline (weight 0.9). What decides a single heat is what happens when the cars meet. In the original fixed-start lane assignment, the two cars leave the grid side by side and, without the net, stay within 2&nbsp;m of each other for 4,941 of 5,000 steps &mdash; wheel to wheel, neither able to pass &mdash; which slows both to about 32.6&nbsp;s laps. With the net on, a brief height event during that contact (step ~917) started a ~500-step loop in which both cars were teleported onto the centerline next to each other and re-triggered each other's height check; that loop is an artifact of the net, not of either policy. The earlier "racing-line covers 19% more distance" came from the collapse bug and is withdrawn. The racing-line policy is marginally faster, not decisively better; the opponent-aware self-play policy does not win races against it either. Both policies occasionally leave the track after coming close to the other car.</p></div>
+    </div>
+
+
+    <div class="entry">
+      <div class="phase">Behavioral cloning, re-examined</div>
+      <h3>The demonstrations were driven the wrong way round</h3>
+      <p>Analysing the three recorded datasets (<code>human_driving_data*.npz</code>) instead of the fine-tuning curves: every sample has cos(heading error) &lt; 0 (means &minus;0.91, &minus;0.98, &minus;0.98), and the recorded yaw rate is positive, i.e. left turns. The RL environment of the single-car baseline runs the original vertex order, clockwise seen from above, and resets every episode within &plusmn;0.1&nbsp;rad of the track direction (cos&nbsp;&asymp;&nbsp;1). The cloned actor was therefore fitted to states the RL task never visits. In addition, <code>record_driving.py</code> computes Car&nbsp;1&rsquo;s observations with Car&nbsp;2&rsquo;s shifted reference line, so the demonstrations sit 2&ndash;3&nbsp;m off that line (31% of dataset&nbsp;1 beyond the off-track margin), and keyboard input makes every action 0 or &plusmn;1.</p>
+      <div class="callout verdict"><span class="tag">Read for the write-up</span><p>The consistent failure across three datasets and five fixes is explained by a shared data mismatch, not by the technique. A valid test would record demonstrations in the task's direction of travel, relative to the same reference line, with continuous (gamepad or wheel) input. BC stays a negative result for this setup, reported as distribution shift.</p></div>
+    </div>
+
+
+    <div class="entry">
+      <div class="phase">Racing, measured</div>
+      <h3>Two copies of one policy follow each other</h3>
+      <p><code>two_car_race_eval.py</code> lets one checkpoint drive both cars, deterministically and without the safety net, for 12 heats of 2,000 control steps (133&nbsp;s, about six laps) from the training-style side-by-side start on 12 seeded random segments (the same segments for every checkpoint). A lead change counts when the trailing car gets at least 2&nbsp;m (one chassis length) ahead; an incident is any step off the track, tilted, or 0.08&nbsp;m off the nominal chassis height. Lap times, offsets (+ = inside of the corner), action delta and gap are over the heats without incident.</p>
+      <div style="overflow-x:auto"><table class="spec" style="font-size:13px">
+        <tr><th>Checkpoint</th><th>Track</th><th class="n">Flying lap</th><th class="n">Offset</th><th class="n">Corner offset</th><th class="n">Action &Delta;</th><th class="n">Heats w/ incident</th><th class="n">Lead changes</th><th class="n">Mean gap</th></tr>
+        <tr><td>run49, zero-shot</td><td>unknown</td><td class="n">23.87 &plusmn; 0.12</td><td class="n">0.89</td><td class="n">&minus;0.79</td><td class="n">0.067</td><td class="n">2</td><td class="n">3</td><td class="n">11.4</td></tr>
+        <tr><td>newtrack_run3</td><td>unknown</td><td class="n">22.05 &plusmn; 0.05</td><td class="n">0.16</td><td class="n">+0.28</td><td class="n">0.042</td><td class="n">0</td><td class="n">0</td><td class="n">7.1</td></tr>
+        <tr><td>newtrack_run12</td><td>unknown</td><td class="n">23.52 &plusmn; 0.40</td><td class="n">0.17</td><td class="n">+0.09</td><td class="n">0.141</td><td class="n">2</td><td class="n">0</td><td class="n">10.5</td></tr>
+        <tr><td>newtrack_overtake_run2</td><td>unknown</td><td class="n">23.21 &plusmn; 0.37</td><td class="n">0.18</td><td class="n">+0.14</td><td class="n">0.124</td><td class="n">4</td><td class="n">2</td><td class="n">3.6</td></tr>
+        <tr><td>newtrack_smooth_run1</td><td>unknown</td><td class="n">22.67 &plusmn; 0.38</td><td class="n">0.18</td><td class="n">+0.16</td><td class="n">0.087</td><td class="n">1</td><td class="n">2</td><td class="n">4.3</td></tr>
+        <tr><td>newtrack_smooth_run20</td><td>unknown</td><td class="n">23.24 &plusmn; 1.31</td><td class="n">0.15</td><td class="n">+0.02</td><td class="n">0.064</td><td class="n">2</td><td class="n">0</td><td class="n">6.8</td></tr>
+        <tr><td>newtrack_smooth_run35</td><td>unknown</td><td class="n">22.58 &plusmn; 0.36</td><td class="n">0.25</td><td class="n">&minus;0.03</td><td class="n">0.103</td><td class="n">5</td><td class="n">4</td><td class="n">17.0</td></tr>
+        <tr><td>newtrack_compete_run6 (final)</td><td>unknown</td><td class="n">22.63 &plusmn; 0.12</td><td class="n">0.16</td><td class="n">+0.08</td><td class="n">0.120</td><td class="n">0</td><td class="n">0</td><td class="n">10.3</td></tr>
+        <tr><td>run49</td><td>original</td><td class="n">21.03 &plusmn; 0.08</td><td class="n">0.07</td><td class="n">+0.01</td><td class="n">0.203</td><td class="n">6</td><td class="n">0</td><td class="n">6.5</td></tr>
+        <tr><td>newtrack_compete_run6 (final)</td><td>original</td><td class="n">21.43 &plusmn; 0.08</td><td class="n">0.17</td><td class="n">+0.01</td><td class="n">0.220</td><td class="n">0</td><td class="n">0</td><td class="n">12.7</td></tr>
+      </table></div>
+      <div class="callout mistake"><span class="tag">Finding</span><p>Every checkpoint races the same way: within 5&ndash;10&nbsp;s the car starting on the inside of the next corner takes the lead, and the gap then stays nearly constant. The inside starter led at the end of 85 of 96 stadium heats. Of the 11 lead changes, 9 happened in heats where a car had an incident &mdash; the lead passed because the leader made a mistake, not because it was overtaken; only two (smooth_run1) came from clean heats. No two chassis centers ever came closer than 1.2&nbsp;m in 120 heats. The overtake incentive made the follower follow closer (mean gap 10.5&nbsp;m at run12, 3.6&nbsp;m at overtake_run2), not pass, and by the final round the gap was back at 10.3&nbsp;m.</p></div>
+      <div class="callout verdict"><span class="tag">Read for the write-up</span><p>The reward redesign reversed the run12 slowdown but produced neither contested racing nor a better policy than newtrack_run3 (22.05&nbsp;s, action delta 0.042): the final policy laps in 22.63&nbsp;s with an action delta of 0.120.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Why the incentive could not work</div>
+      <h3>Identical cars, a speed cap, and a reward too small for the risk</h3>
+      <p>Three reasons. <strong>Physics:</strong> both cars are identical, driven by the same deterministic network, and both reach the same 6&nbsp;m/s top speed on every straight; a follower can gain only through a shorter line in the corners, which the leader already occupies, or through a mistake of the leader. <strong>Scale:</strong> at a weight of 0.5, gaining one car length (2&nbsp;m) is worth 1.0 &mdash; less than the proximity penalty for a single step within 1.2&nbsp;m (1.5) &mdash; and over an episode the term telescopes to at most 0.5&nbsp;&times;&nbsp;30 = 15, while a failed pass costs 150 and ends the pair's episode. <strong>Symmetry:</strong> the term is zero-sum between two cars driven by the same parameters, so every gain in one role is a loss in the other, and holding position satisfies both. Following at a safe distance is a stable outcome of this game.</p>
+      <div class="callout verdict"><span class="tag">Next time</span><p>Make overtaking possible and worth it: opponents of different strength (earlier checkpoints, a league), start configurations behind a slower opponent, a reward paid when a pass is completed rather than per step, and the race evaluation above as the test.</p></div>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Both tracks, both ways</div>
+      <h3>No forgetting &mdash; and run49's weak spot was the start</h3>
+      <p>The final policy, 55 rounds after it last saw the original track, still drives it in all 12 heats without incident (21.43&nbsp;s flying laps, 1.9% slower than run49). Run49 itself drives its own track at top speed and practically on the centerline (21.03&nbsp;s, 0.07&nbsp;m offset), but had incidents in 6 of its 12 heats, 4 of them off the track, all within the first 250 steps after the side-by-side start, when the two cars came close. Twelve deterministic heats are a small sample, but the start was evidently the weakest part of that policy.</p>
+    </div>
+
+    <div class="entry">
+      <div class="phase">Two record fixes</div>
+      <h3>Which round had the 5.0 penalty, and what the logs say about Runs 2&ndash;3</h3>
+      <p>The oversized collision penalty (5.0 within 1.8&nbsp;m) was in effect for the first two two-car rounds (a 20k-step validation round with 3 pairs, then the first 200k-step round with 8 pairs, whose mean episode length fell from 469 to 287); the 0.4 / 1.2&nbsp;m fix came with round 3. For the single-car baseline, see the note under the §1 run table. The full per-round history of every lineage is now in Appendix&nbsp;A of the thesis.</p>
+    </div>
+
   </div>
 </section>
 
 <section id="status">
-  <h2 class="section-head"><span class="idx">07</span> Where it stands</h2>
+  <h2 class="section-head"><span class="idx">11</span> Where it stands</h2>
   <ul class="plain">
-    <li><strong>Accepted baseline — pure RL, single car:</strong> <code>car2_ppo_model.zip</code>, 450k cumulative steps, reward settled around 105–113, full-length episodes the overwhelming majority. Still the most reliable, fully-converged policy in the project. The behavioral-cloning warm-start (§3) and a reversed-direction retraining attempt (§5) were both explored and did not replace it.</li>
-    <li><strong>Experimental — parallel + curvature look-ahead, single car:</strong> <code>car2_vec_ppo_model.zip</code>, 470k cumulative steps, 7-dim observation. Higher peak reward (121.9) than the baseline but lower consistency (~50–60% full-length vs ~99%) — a genuinely different, not-yet-fully-converged lineage rather than a strict improvement.</li>
-    <li><strong>Experimental — two-car self-play racing:</strong> <code>car_race_ppo_model.zip</code>, ~900k cumulative steps, 10-dim observation, one shared policy driving both cars. Peak reward climbing steadily (93.95→106.1 across the corrected-reward runs) but not yet fully converged (~45% full-length rate). Live-demo deployment requires the recovery net due to the unresolved chassis-collapse bug in §6.</li>
+    <li><strong>Thesis:</strong> complete draft (seven chapters, Appendix&nbsp;A with the per-round history of every lineage, abstract), with every headline number taken from the logs or re-measured; the corrections marked in this journal are the ones the thesis reports.</li>
+    <li><strong>Accepted baseline — pure RL, single car:</strong> <code>car2_ppo_model.zip</code>, 450k cumulative steps, reward settled around 105–113, full-length episodes the overwhelming majority. Still the most reliable, fully-converged centerline-following policy in the project. The behavioral-cloning warm-start (§3, re-examined in §10: its demonstrations were recorded in the opposite direction of travel) and a reversed-direction retraining attempt (§5) were both explored and did not replace it.</li>
+    <li><strong>Beaten in lap time by a classical controller:</strong> a non-learning pure-pursuit controller (§8) scores a similar reward (108.70 average) on the identical track, and on a common physical metric it is clearly faster: 51.4&nbsp;s flying laps vs. 73.9&nbsp;s for the 450k RL baseline and 60.6&nbsp;s for the 700k smoothness policy, with no off-track run (§10).</li>
+    <li><strong>Racing-line variant &mdash; corrected:</strong> <code>car2_racingline_ppo_model.zip</code> reported an average reward of 187.6, but that reward was earned by a collapsed, stationary car holding full throttle on the box-ground training stage, not by driving (§10). It is not evidence that the racing line is better. On corrected physics the network does drive fast (21.3&nbsp;s laps), and in a re-run race against the self-play policy on the fixed stage it is about 0.5% faster &mdash; a small margin, not the 19% reported earlier.</li>
+    <li><strong>Parallel + curvature look-ahead &mdash; corrected:</strong> <code>car2_vec_ppo_model.zip</code>, 470k steps. Its reward, including the 121.9 peak, came from collapsed cars on the box-ground stage; on the analytic ground plane it leaves the track within 43&ndash;53 steps in every run. It never learned to drive. The parallel-clone architecture itself worked and was reused for the two-car lineage.</li>
+    <li><strong>Two-car self-play racing &mdash; drives well, does not race:</strong> <code>car_race_ppo_model.zip</code>, ~95M cumulative steps after a real regression and recovery on the original track (§6) and a reward redesign on the new track (§9). The training statistics reached an elite 90&ndash;100% full-length regime, and both cars lap the unknown track in about 22.6&nbsp;s. Measured directly (§10), however, the two copies of the policy never contest the lead: the car starting on the inside leads after the first corner and keeps it, and lead changes happen almost only after the leader's own mistake.</li>
+    <li><strong>Generalization to an unknown track (§7, re-read in §10):</strong> zero-shot, the run49 policy drove the unknown track only 8% slower than after adaptation (23.87 vs. 22.05&nbsp;s); its reward drop (+141.7&nbsp;&rarr;&nbsp;&minus;155.5) is mostly the centering penalty for a wider line (0.89&nbsp;m mean offset). Three rounds of adaptation closed the gap; further training with the same reward then made the policy slower and jerkier without a clear sign in the training statistics. The adapted policy still drives the original track cleanly.</li>
+    <li><strong>Reward redesign &mdash; speed, competition, and smoothness (§9, corrected in §10):</strong> the raised throttle bonus, the zero-sum overtake incentive, and the smoothness penalty reversed the run12 slowdown and, for a while, the jitter (26.3% smoother at smooth_run20 than at smooth_run1). They did not produce contested racing, and the final policy is slower and less smooth than newtrack_run3. The jitter itself predated the new terms, and the "one car always wins" pattern is the advantage of the inside starting position.</li>
+    <li><strong>Recovery net retired:</strong> with full-length rates consistently 85–100%+ on both tracks, the live-demo teleport-back safety net was dropped (kept only as a diagnostic counter) — the raw policy now drives unassisted, only the still-unresolved chassis-collapse bug (§6) can leave a car stuck for the rest of a session.</li>
+    <li><strong>Head-to-head result (§8, re-run in §10):</strong> the original two heats ran on the box-ground stage and are withdrawn. On the fixed stage against the run49 self-play checkpoint, both policies lap at about 21&nbsp;s; over both lane assignments racing-line 3,644&nbsp;m vs. self-play 3,655&nbsp;m (recovery net on) and 3,275&nbsp;m vs. 3,273&nbsp;m (net off); over 20 random-start heats, racing-line ahead in 17, about 0.5% more distance in clean heats. The racing-line policy is marginally faster, not decisively better.</li>
     <li><strong>Stuck-patch question (single-car lineage), resolved by observation:</strong> the ~140-second stuck patch seen once with the 150k-step policy did not recur in a full live demo of the 350k-step Run 6 policy — consistent with it having been a symptom of an under-trained policy rather than a standing recovery-logic bug.</li>
-    <li><strong>Open issue:</strong> the chassis-collapse bug in §6 — reproducible, unresolved after five fix attempts, currently worked around rather than fixed.</li>
-    <li><strong>Repo:</strong> a git repository has been prepared for this project (<code>.gitignore</code> excludes run logs, the Isaac Lab clone, and stray files) — organized commits are staged and ready, pending a decision on the author identity to commit under before this gets posted publicly.</li>
+    <li><strong>Resolved — the chassis-collapse bug (§6):</strong> after five car-side fix attempts and two reward-side interventions all failed identically, the actual root cause turned out to be the ground's collision <em>shape</em> (a finite box, unstable in box-vs-wheel PhysX contact under sustained throttle) rather than any car parameter or reward weight. Replacing it with Isaac Sim's own analytic ground-plane construction dropped the live collapse rate from 100% of recoveries to 2.35%, confirmed both in a scripted stress test (0.000 height error across 400 steps, twice) and against the actual trained policy. The recovery net stays in as a safety margin for the small residual rate, but this is now a mostly-fixed bug, not a documented limitation. <strong>Not fixed:</strong> <code>vec_train_car2.usd</code>, the training stage of the vec + curvature and racing-line lineages, which is why their rewards are artifacts (§10).</li>
+    <li><strong>Repo:</strong> published on GitHub, since reorganized from nine narrow topic folders into four broader categories (Simulation, Baselines, Racing, Evaluation) for readability, with a full README documenting each stage's workflow, processing steps, and results — <code>.gitignore</code> excludes run logs, versioned checkpoint backups, and the Isaac Lab clone.</li>
+    <li><strong>Milestone check (§7):</strong> a review against the original supervisor milestone plan found the smooth-driving and unknown-track items open, plus a real, previously undiscovered divergence on the ROS/Isaac Lab requirements. Both open items are now closed: smooth driving with a directly measured 18.6% reduction in action jitter, and unknown-track generalization with a quantified survival/reward split plus a concrete adaptation result on the new track. The ROS/Isaac Lab question has since been cleared: the custom Isaac Sim + stable-baselines3 environment and the absence of ROS are documented in the thesis as deliberate design decisions.</li>
   </ul>
 </section>
 
-<footer>Compiled across the working sessions on the Isaac Sim car + track project, from initial setup through the two-car self-play racing work. Numbers reflect results as of this write-up.</footer>
+<footer>Compiled across the working sessions on the Isaac Sim car + track project, from initial setup through the two-car self-play racing work, its regression and recovery, the long plateau past a sustained 90% full-length rate, the racing-line/classical-baseline comparisons, the milestone-gap check against the original project plan, the unknown-track generalization test and follow-on adaptation training, and the reward redesign that followed — recovering lost speed, adding genuine competition, fixing (then defending, with numbers) driving smoothness, and finally tracing an apparent "one car always wins" pattern to a fixed, unrandomized evaluation spawn point rather than a policy flaw. Numbers reflect results as of this write-up. Corrections after a physical re-evaluation of all headline results were added on 2026-09-24, and the race evaluation of the two-car lineage on 2026-09-25 (§10 and the marked notes).</footer>
 
 </div>
+
+</body></html>

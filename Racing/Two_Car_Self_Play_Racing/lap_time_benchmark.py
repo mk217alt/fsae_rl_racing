@@ -61,6 +61,23 @@ car_b.initialize()
 cars = [car_a, car_b]
 names = ["Car A", "Car B"]
 
+# 2026-09-23: unknown_track.usd's two spawn points (build_unknown_track_deploy.py,
+# (0,-1.5) and (0,1.5)) are fixed and never randomized, so whichever physical
+# spot is mildly favorable for the first corner always wins - confirmed via a
+# one-off swap test (car A and B's win rates were identical once positions
+# were swapped, and the win stayed with the position, not the car). Randomly
+# swapping which car occupies which spawn point each run removes this
+# deterministic labeling bias without changing the actual track/physics.
+if np.random.default_rng().random() < 0.5:
+    pos_a, orient_a = car_a.get_world_poses()
+    pos_b, orient_b = car_b.get_world_poses()
+    car_a.set_world_poses(positions=pos_b, orientations=orient_b)
+    car_b.set_world_poses(positions=pos_a, orientations=orient_a)
+    car_a.set_velocities(np.zeros((1, 6)))
+    car_b.set_velocities(np.zeros((1, 6)))
+    for _ in range(2):
+        world.step(render=False)
+
 policy = PPO.load(MODEL_PATH, device="cpu")
 points, cumulative = build_centerline()
 n_segments = len(points)

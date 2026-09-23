@@ -1,0 +1,107 @@
+{
+  "summary": {
+    "policy": "vec",
+    "mode": "stoch",
+    "ground": "box",
+    "episode_steps": 500,
+    "mean_episode_reward": 21.99,
+    "full_length_episodes": 0,
+    "mean_distance_m": 3.06,
+    "mean_speed_mps": 0.092,
+    "clones_with_collapse": 6,
+    "mean_collapse_share": 0.57,
+    "mean_throttle": 0.983
+  },
+  "clones": [
+    {
+      "episode_reward": 121.49,
+      "distance_m": 0.1,
+      "off_track_at_step": 500,
+      "collapse_steps": 494,
+      "first_collapse_step": 6,
+      "mean_throttle": 0.997,
+      "mean_abs_steer": 0.906
+    },
+    {
+      "episode_reward": 98.29,
+      "distance_m": 0.36,
+      "off_track_at_step": 500,
+      "collapse_steps": 486,
+      "first_collapse_step": 5,
+      "mean_throttle": 0.994,
+      "mean_abs_steer": 0.958
+    },
+    {
+      "episode_reward": 18.5,
+      "distance_m": 2.78,
+      "off_track_at_step": 500,
+      "collapse_steps": 468,
+      "first_collapse_step": 32,
+      "mean_throttle": 0.997,
+      "mean_abs_steer": 0.979
+    },
+    {
+      "episode_reward": -39.7,
+      "distance_m": 6.25,
+      "off_track_at_step": 61,
+      "collapse_steps": 0,
+      "first_collapse_step": null,
+      "mean_throttle": 0.942,
+      "mean_abs_steer": 0.851
+    },
+    {
+      "episode_reward": 91.27,
+      "distance_m": 0.95,
+      "off_track_at_step": 500,
+      "collapse_steps": 481,
+      "first_collapse_step": 19,
+      "mean_throttle": 0.991,
+      "mean_abs_steer": 0.979
+    },
+    {
+      "episode_reward": -59.12,
+      "distance_m": 3.12,
+      "off_track_at_step": 48,
+      "collapse_steps": 0,
+      "first_collapse_step": null,
+      "mean_throttle": 1.0,
+      "mean_abs_steer": 0.932
+    },
+    {
+      "episode_reward": 96.45,
+      "distance_m": 4.67,
+      "off_track_at_step": 500,
+      "collapse_steps": 429,
+      "first_collapse_step": 30,
+      "mean_throttle": 0.961,
+      "mean_abs_steer": 0.803
+    },
+    {
+      "episode_reward": -10.4,
+      "distance_m": 0.47,
+      "off_track_at_step": 500,
+      "collapse_steps": 490,
+      "first_collapse_step": 10,
+      "mean_throttle": 0.978,
+      "mean_abs_steer": 0.896
+    },
+    {
+      "episode_reward": -50.61,
+      "distance_m": 5.85,
+      "off_track_at_step": 53,
+      "collapse_steps": 0,
+      "first_collapse_step": null,
+      "mean_throttle": 0.968,
+      "mean_abs_steer": 0.893
+    },
+    {
+      "episode_reward": -46.29,
+      "distance_m": 6.09,
+      "off_track_at_step": 57,
+      "collapse_steps": 0,
+      "first_collapse_step": null,
+      "mean_throttle": 0.998,
+      "mean_abs_steer": 0.914
+    }
+  ]
+}

@@ -1,0 +1,185 @@
+{
+  "stage": "C:/Users/sanja/Desktop/thesis/Racing/Two_Car_Self_Play_Racing/race_deploy.usd",
+  "ground_prim_types": [
+    "Mesh",
+    "Plane",
+    "Xform"
+  ],
+  "selfplay_checkpoint": "run49",
+  "track_length_m": 126.77,
+  "lanes": "normal",
+  "recovery_net": true,
+  "control_steps": 5000,
+  "sim_time_s": 333.3,
+  "contact_steps_lt_1.2m": 470,
+  "near_steps_lt_2m": 1350,
+  "lead_changes": 0,
+  "cars": [
+    {
+      "slot": "A",
+      "policy": "racing-line",
+      "distance_m": 1658.95,
+      "laps": 13.09,
+      "lap_times_s": [
+        34.53,
+        64.6,
+        21.13,
+        21.13,
+        21.13,
+        21.13,
+        21.13,
+        21.13,
+        21.13,
+        21.13,
+        21.13,
+        21.07,
+        21.13
+      ],
+      "lead_share": 0.0,
+      "event_steps_by_cause": {
+        "off_track": 0,
+        "tilt": 6,
+        "height": 233
+      },
+      "first_event": [
+        917,
+        "height"
+      ],
+      "mean_action_delta": 0.0643
+    },
+    {
+      "slot": "B",
+      "policy": "self-play",
+      "distance_m": 1672.52,
+      "laps": 13.19,
+      "lap_times_s": [
+        34.27,
+        64.27,
+        21.0,
+        20.93,
+        20.93,
+        21.0,
+        20.93,
+        21.0,
+        21.0,
+        20.93,
+        21.0,
+        21.0,
+        21.07
+      ],
+      "lead_share": 1.0,
+      "event_steps_by_cause": {
+        "off_track": 0,
+        "tilt": 3,
+        "height": 250
+      },
+      "first_event": [
+        919,
+        "height"
+      ],
+      "mean_action_delta": 0.1954
+    }
+  ],
+  "snapshots_step_distA_distB": [
+    [
+      250,
+      56.2,
+      57.4
+    ],
+    [
+      500,
+      122.2,
+      123.3
+    ],
+    [
+      750,
+      188.0,
+      189.1
+    ],
+    [
+      1000,
+      228.6,
+      229.6
+    ],
+    [
+      1250,
+      227.4,
+      228.5
+    ],
+    [
+      1500,
+      259.0,
+      262.4
+    ],
+    [
+      1750,
+      358.9,
+      363.2
+    ],
+    [
+      2000,
+      459.1,
+      464.1
+    ],
+    [
+      2250,
+      559.4,
+      564.9
+    ],
+    [
+      2500,
+      659.3,
+      665.7
+    ],
+    [
+      2750,
+      759.0,
+      766.5
+    ],
+    [
+      3000,
+      858.8,
+      867.2
+    ],
+    [
+      3250,
+      958.8,
+      968.0
+    ],
+    [
+      3500,
+      1059.0,
+      1068.7
+    ],
+    [
+      3750,
+      1159.1,
+      1169.4
+    ],
+    [
+      4000,
+      1259.2,
+      1270.1
+    ],
+    [
+      4250,
+      1358.8,
+      1370.7
+    ],
+    [
+      4500,
+      1458.8,
+      1471.3
+    ],
+    [
+      4750,
+      1558.7,
+      1571.9
+    ],
+    [
+      5000,
+      1659.0,
+      1672.5
+    ]
+  ]
+}

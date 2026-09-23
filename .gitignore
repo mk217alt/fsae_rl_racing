@@ -16,6 +16,7 @@ __pycache__/
 *_telemetry.txt
 *_recovery_stats.txt
 record_driving_progress.txt
+*_action_deltas.csv
 
 # Internal safety-net checkpoint versioning, not a curated thesis deliverable
 # (see checkpoint_backups/ usage notes in project memory)
@@ -34,3 +35,6 @@ car2_bc_warmed_v*.zip
 2.7.0+cu128
 testing.usd
 thesis-backup.usd
+
+# Thesis manuscript (kept local, not published with the code)
+thesis_document/

@@ -1,0 +1,1216 @@
+{
+  "stage": "C:/Users/sanja/Desktop/thesis/Racing/Two_Car_Self_Play_Racing/race_deploy.usd",
+  "ground_prim_types": [
+    "Mesh",
+    "Plane",
+    "Xform"
+  ],
+  "selfplay_checkpoint": "run49",
+  "track_length_m": 126.77,
+  "mode": "series",
+  "n_starts": 10,
+  "control_steps_per_heat": 1500,
+  "recovery_net": false,
+  "start_segments": [
+    31,
+    36,
+    8,
+    16,
+    30,
+    9,
+    38,
+    34,
+    33,
+    17
+  ],
+  "summary": {
+    "racing_line_mean_distance_m": 553.58,
+    "self_play_mean_distance_m": 497.22,
+    "mean_diff_selfplay_minus_racingline_m": -56.36,
+    "std_diff_m": 226.8,
+    "heats_won_by_self_play": 3,
+    "heats_won_by_racing_line": 17,
+    "heats_won_by_slot_B": 7,
+    "heats_with_contact": 0,
+    "heats": 20
+  },
+  "heats": [
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 13,
+      "lead_changes": 1,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 586.0,
+          "laps": 4.62,
+          "lap_times_s": [
+            23.4,
+            21.13,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.997,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0719
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 581.67,
+          "laps": 4.59,
+          "lap_times_s": [
+            24.67,
+            21.0,
+            21.0,
+            21.0
+          ],
+          "lead_share": 0.003,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2598
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          586.0,
+          581.7
+        ]
+      ],
+      "start_segment": 31
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 10,
+      "lead_changes": 2,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 585.02,
+          "laps": 4.61,
+          "lap_times_s": [
+            24.07,
+            21.0,
+            21.0,
+            21.0
+          ],
+          "lead_share": 0.015,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2615
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 587.73,
+          "laps": 4.64,
+          "lap_times_s": [
+            23.13,
+            21.13,
+            21.07,
+            21.13
+          ],
+          "lead_share": 0.984,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.073
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          585.0,
+          587.7
+        ]
+      ],
+      "start_segment": 31
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 13,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 587.62,
+          "laps": 4.64,
+          "lap_times_s": [
+            23.27,
+            21.13,
+            21.07,
+            21.13
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0732
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 579.85,
+          "laps": 4.57,
+          "lap_times_s": [
+            24.6,
+            21.13,
+            21.13,
+            21.07
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2486
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          587.6,
+          579.9
+        ]
+      ],
+      "start_segment": 36
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 16,
+      "lead_changes": 2,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 12.12,
+          "laps": 0.1,
+          "lap_times_s": [],
+          "lead_share": 0.015,
+          "event_steps_by_cause": {
+            "off_track": 794,
+            "tilt": 3,
+            "height": 9
+          },
+          "first_event": [
+            49,
+            "height"
+          ],
+          "mean_action_delta": 0.0344
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 585.41,
+          "laps": 4.62,
+          "lap_times_s": [
+            23.67,
+            21.07,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.984,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0719
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          12.1,
+          585.4
+        ]
+      ],
+      "start_segment": 36
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 13,
+      "lead_changes": 1,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 587.1,
+          "laps": 4.63,
+          "lap_times_s": [
+            23.27,
+            21.13,
+            21.07,
+            21.13
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0711
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 583.12,
+          "laps": 4.6,
+          "lap_times_s": [
+            24.47,
+            21.0,
+            21.0,
+            20.93
+          ],
+          "lead_share": 0.001,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2601
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          587.1,
+          583.1
+        ]
+      ],
+      "start_segment": 8
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 14,
+      "lead_changes": 2,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 584.26,
+          "laps": 4.61,
+          "lap_times_s": [
+            24.07,
+            21.0,
+            21.07,
+            21.07
+          ],
+          "lead_share": 0.016,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2708
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 586.47,
+          "laps": 4.63,
+          "lap_times_s": [
+            23.33,
+            21.13,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.983,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0728
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          584.3,
+          586.5
+        ]
+      ],
+      "start_segment": 8
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 35,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 584.72,
+          "laps": 4.61,
+          "lap_times_s": [
+            23.67,
+            21.13,
+            21.2,
+            21.07
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0713
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 578.93,
+          "laps": 4.57,
+          "lap_times_s": [
+            25.0,
+            21.07,
+            21.07,
+            21.0
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2575
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          584.7,
+          578.9
+        ]
+      ],
+      "start_segment": 16
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 7,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 589.88,
+          "laps": 4.65,
+          "lap_times_s": [
+            23.47,
+            20.93,
+            21.0,
+            20.93
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.1542
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 580.85,
+          "laps": 4.58,
+          "lap_times_s": [
+            24.4,
+            21.13,
+            21.13,
+            21.07
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0709
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          589.9,
+          580.9
+        ]
+      ],
+      "start_segment": 16
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 12,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 587.1,
+          "laps": 4.63,
+          "lap_times_s": [
+            23.27,
+            21.13,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0715
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 583.21,
+          "laps": 4.6,
+          "lap_times_s": [
+            24.4,
+            21.0,
+            21.0,
+            21.0
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2573
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          587.1,
+          583.2
+        ]
+      ],
+      "start_segment": 30
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 16,
+      "lead_changes": 2,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 21.38,
+          "laps": 0.17,
+          "lap_times_s": [],
+          "lead_share": 0.016,
+          "event_steps_by_cause": {
+            "off_track": 852,
+            "tilt": 0,
+            "height": 5
+          },
+          "first_event": [
+            51,
+            "height"
+          ],
+          "mean_action_delta": 0.0303
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 586.49,
+          "laps": 4.63,
+          "lap_times_s": [
+            23.33,
+            21.13,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.983,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0726
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          21.4,
+          586.5
+        ]
+      ],
+      "start_segment": 30
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 14,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 586.34,
+          "laps": 4.63,
+          "lap_times_s": [
+            23.4,
+            21.13,
+            21.13,
+            21.07
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0712
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 581.14,
+          "laps": 4.58,
+          "lap_times_s": [
+            24.67,
+            21.07,
+            21.0,
+            21.0
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.258
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          586.3,
+          581.1
+        ]
+      ],
+      "start_segment": 9
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 142,
+      "lead_changes": 1,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 48.46,
+          "laps": 0.38,
+          "lap_times_s": [],
+          "lead_share": 0.015,
+          "event_steps_by_cause": {
+            "off_track": 1229,
+            "tilt": 0,
+            "height": 6
+          },
+          "first_event": [
+            170,
+            "height"
+          ],
+          "mean_action_delta": 0.0402
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 491.0,
+          "laps": 3.87,
+          "lap_times_s": [
+            39.27,
+            21.07,
+            21.13
+          ],
+          "lead_share": 0.985,
+          "event_steps_by_cause": {
+            "off_track": 170,
+            "tilt": 0,
+            "height": 9
+          },
+          "first_event": [
+            165,
+            "height"
+          ],
+          "mean_action_delta": 0.0553
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          48.5,
+          491.0
+        ]
+      ],
+      "start_segment": 9
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 13,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 588.34,
+          "laps": 4.64,
+          "lap_times_s": [
+            23.13,
+            21.07,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0713
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 583.08,
+          "laps": 4.6,
+          "lap_times_s": [
+            24.33,
+            21.07,
+            21.0,
+            21.07
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.266
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          588.3,
+          583.1
+        ]
+      ],
+      "start_segment": 38
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 8,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 587.69,
+          "laps": 4.64,
+          "lap_times_s": [
+            23.8,
+            20.93,
+            21.0,
+            21.0
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.1559
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 577.75,
+          "laps": 4.56,
+          "lap_times_s": [
+            24.87,
+            21.13,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0718
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          587.7,
+          577.8
+        ]
+      ],
+      "start_segment": 38
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 13,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 587.36,
+          "laps": 4.63,
+          "lap_times_s": [
+            23.4,
+            21.07,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0731
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 582.49,
+          "laps": 4.59,
+          "lap_times_s": [
+            24.53,
+            21.0,
+            21.0,
+            21.0
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2575
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          587.4,
+          582.5
+        ]
+      ],
+      "start_segment": 34
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 110,
+      "lead_changes": 2,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 535.02,
+          "laps": 4.22,
+          "lap_times_s": [
+            30.2,
+            20.0,
+            22.6,
+            22.47
+          ],
+          "lead_share": 0.914,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 5
+          },
+          "first_event": [
+            721,
+            "height"
+          ],
+          "mean_action_delta": 0.1124
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 37.07,
+          "laps": 0.29,
+          "lap_times_s": [],
+          "lead_share": 0.085,
+          "event_steps_by_cause": {
+            "off_track": 611,
+            "tilt": 0,
+            "height": 25
+          },
+          "first_event": [
+            181,
+            "height"
+          ],
+          "mean_action_delta": 0.0142
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          535.0,
+          37.1
+        ]
+      ],
+      "start_segment": 34
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 12,
+      "lead_changes": 0,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 586.85,
+          "laps": 4.63,
+          "lap_times_s": [
+            23.4,
+            21.13,
+            21.2,
+            21.13
+          ],
+          "lead_share": 0.999,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0733
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 581.57,
+          "laps": 4.59,
+          "lap_times_s": [
+            24.6,
+            21.0,
+            21.07,
+            21.0
+          ],
+          "lead_share": 0.0,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.262
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          586.9,
+          581.6
+        ]
+      ],
+      "start_segment": 33
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 18,
+      "lead_changes": 3,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 582.08,
+          "laps": 4.59,
+          "lap_times_s": [
+            24.4,
+            21.0,
+            21.07,
+            21.07
+          ],
+          "lead_share": 0.012,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2704
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 584.99,
+          "laps": 4.61,
+          "lap_times_s": [
+            23.67,
+            21.13,
+            21.13,
+            21.2
+          ],
+          "lead_share": 0.987,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0726
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          582.1,
+          585.0
+        ]
+      ],
+      "start_segment": 33
+    },
+    {
+      "lanes": "normal",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 28,
+      "lead_changes": 1,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "racing-line",
+          "distance_m": 586.29,
+          "laps": 4.62,
+          "lap_times_s": [
+            23.47,
+            21.13,
+            21.07,
+            21.13
+          ],
+          "lead_share": 0.996,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0719
+        },
+        {
+          "slot": "B",
+          "policy": "self-play",
+          "distance_m": 579.44,
+          "laps": 4.57,
+          "lap_times_s": [
+            24.8,
+            21.07,
+            21.07,
+            21.07
+          ],
+          "lead_share": 0.003,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2607
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          586.3,
+          579.4
+        ]
+      ],
+      "start_segment": 17
+    },
+    {
+      "lanes": "swap",
+      "recovery_net": false,
+      "control_steps": 1500,
+      "sim_time_s": 100.0,
+      "contact_steps_lt_1.2m": 0,
+      "near_steps_lt_2m": 18,
+      "lead_changes": 2,
+      "cars": [
+        {
+          "slot": "A",
+          "policy": "self-play",
+          "distance_m": 584.0,
+          "laps": 4.61,
+          "lap_times_s": [
+            24.0,
+            21.07,
+            21.07,
+            21.13
+          ],
+          "lead_share": 0.013,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.2798
+        },
+        {
+          "slot": "B",
+          "policy": "racing-line",
+          "distance_m": 586.14,
+          "laps": 4.62,
+          "lap_times_s": [
+            23.47,
+            21.07,
+            21.13,
+            21.13
+          ],
+          "lead_share": 0.986,
+          "event_steps_by_cause": {
+            "off_track": 0,
+            "tilt": 0,
+            "height": 0
+          },
+          "first_event": null,
+          "mean_action_delta": 0.0728
+        }
+      ],
+      "snapshots_step_distA_distB": [
+        [
+          1500,
+          584.0,
+          586.1
+        ]
+      ],
+      "start_segment": 17
+    }
+  ]
+}

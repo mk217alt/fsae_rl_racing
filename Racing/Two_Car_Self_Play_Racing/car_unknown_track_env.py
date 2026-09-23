@@ -87,7 +87,14 @@ OPPONENT_GAP_CLIP = 30.0
 # term, matching this project's repeated lesson that oversized new per-step
 # terms cause runaway-suppression pathologies (the COLLISION_PENALTY=5.0
 # incident, the run19-21 overcorrection arc).
-OVERTAKE_INCENTIVE_WEIGHT = 0.3
+# 2026-09-23: raised 0.3->0.5 at the user's request after judging the
+# racing "still not competitive" even at the elite full-length/reward tier
+# reached by run35/36 - dead-even lap times and near-perfect survival don't
+# by themselves mean the two cars are actually contesting position rather
+# than settling into a stable parallel gap. Stayed below a full doubling
+# since it's still an open question whether more incentive alone fixes a
+# qualitative "doesn't really race" complaint - being watched next round.
+OVERTAKE_INCENTIVE_WEIGHT = 0.5
 # 2026-09-21: smoothness penalty, added at the user's request after
 # reporting jerky driving on the demo following the throttle-bonus raise
 # and overtake incentive above - both reward bursty throttle/steer changes

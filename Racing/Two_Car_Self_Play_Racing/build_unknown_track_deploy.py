@@ -250,8 +250,27 @@ def build_track(track_path, offset):
     add_static_box(f"{track_path}/road", (center_x, center_y, -ROAD_HEIGHT / 2.0),
                     (span_x, span_y, ROAD_HEIGHT), 0.0, road_mat, collision=False)
 
-    x0, y0 = points[0]
-    x1, y1 = points[1]
+    # 2026-09-22: the line used to sit at points[0], which is wherever the
+    # centerline math happens to start - NOT the same place build_car()
+    # actually spawns the cars (ox, oy) = (0.0, 0.0) here. On this stadium
+    # layout those are ~40m apart on opposite straights, so the cars never
+    # saw a line at their own start position, only when they later crossed
+    # the (mislabeled) line elsewhere on the lap. Find the centerline point
+    # nearest the real spawn point instead, so the line is actually there.
+    spawn_x, spawn_y = ox, oy
+    start_i, best_d2 = 0, float("inf")
+    for i in range(n_points):
+        sx0, sy0 = points[i]
+        sx1, sy1 = points[(i + 1) % n_points]
+        sdx, sdy = sx1 - sx0, sy1 - sy0
+        seg_len2 = sdx * sdx + sdy * sdy
+        t = max(0.0, min(1.0, ((spawn_x - sx0) * sdx + (spawn_y - sy0) * sdy) / seg_len2))
+        px, py = sx0 + t * sdx, sy0 + t * sdy
+        d2 = (spawn_x - px) ** 2 + (spawn_y - py) ** 2
+        if d2 < best_d2:
+            start_i, best_d2 = i, d2
+    x0, y0 = points[start_i]
+    x1, y1 = points[(start_i + 1) % n_points]
     dx0, dy0 = x1 - x0, y1 - y0
     seg_len0 = math.hypot(dx0, dy0)
     fx0, fy0 = dx0 / seg_len0, dy0 / seg_len0
