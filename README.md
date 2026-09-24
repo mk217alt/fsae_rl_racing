@@ -448,7 +448,16 @@ python.bat Racing/Two_Car_Self_Play_Racing/train_unknown_track.py 1000000 <run_l
 python.bat Evaluation/Comparative_Evaluation/two_car_race_eval.py stadium 12 2000 100M_milestone
 ```
 
-The scripts contain the absolute path of the author's working folder (`C:/Users/sanja/Desktop/thesis`); replace it with the path of your copy before running them. The instruction manual that accompanies the thesis gives a one-line command for this, the full setup, and the expected result of every evaluation.
+The scripts contain the absolute path of the author's working folder (`C:/Users/sanja/Desktop/thesis`); replace it with the path of your copy before running them, for example in PowerShell:
+
+```powershell
+$REPO = "C:\fsae_rl_racing"   # your clone
+$new  = $REPO.Replace('\', '/')
+Get-ChildItem $REPO -Recurse -Filter *.py | ForEach-Object {
+    $s = [IO.File]::ReadAllText($_.FullName)
+    [IO.File]::WriteAllText($_.FullName, $s.Replace('C:/Users/sanja/Desktop/thesis', $new))
+}
+```
 
 ## Checking the results without the simulator
 
