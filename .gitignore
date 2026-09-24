@@ -18,9 +18,13 @@ __pycache__/
 record_driving_progress.txt
 *_action_deltas.csv
 
-# checkpoint_backups/ (one model per training round) is published so that every
+# 3_trained_models/checkpoints/ (one model per training round) is published so that every
 # evaluation in the thesis can be re-run; only this smoke-test checkpoint is excluded
-checkpoint_backups/car_race_ppo_model_smoke_test_after_move.zip
+3_trained_models/checkpoints/car_race_ppo_model_smoke_test_after_move.zip
+
+# Status, log and telemetry files the scripts write while running
+run_output/*
+!run_output/README.txt
 
 # Superseded iteration checkpoints from the BC fine-tuning experiment
 # (kept: the unsuffixed final ones - car2_bc_finetuned.zip etc.)

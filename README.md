@@ -6,7 +6,7 @@ The objective of this project is to develop and compare reinforcement-learning a
 
 Every lineage uses the same car model, action interface, and track construction. Because the lineages were trained on different reward functions, their training rewards are **not** comparable; every headline result was therefore re-measured with direct physical metrics (lap time, driving line, smoothness, crashes, overtakes). Several conclusions drawn earlier from training rewards did not survive this re-evaluation — see [Key findings](#key-findings) and §8.
 
-This repository contains the code, models, and evaluation results of the master's thesis *Reinforcement Learning for Autonomous Racing of a Formula Student Vehicle in NVIDIA Isaac Sim* — see [Thesis status](#thesis-status). The full development record, including every mistake and correction, is in `rl_journal.html`.
+This repository contains the code, models, and evaluation results of the master's thesis *Reinforcement Learning for Autonomous Racing of a Formula Student Vehicle in NVIDIA Isaac Sim* — see [Thesis status](#thesis-status). The full development record, including every mistake and correction, is in `7_journal/rl_journal.html`.
 
 ## Key findings
 
@@ -29,12 +29,12 @@ The thesis is fully drafted (as of 2026-09-24, updated with the 100-million-step
 |---|---|---|
 | 1 Introduction | motivation, research questions RQ1–RQ4, contributions | – |
 | 2 Background and Related Work | RL and PPO, reward design, imitation learning, racing control, self-play, generalization, simulators | – |
-| 3 System Design and Methodology | custom vehicle, tracks, and environments; reward terms; PPO setup; parallel architecture; self-play; evaluation protocol | `Simulation/`, environment files in `Baselines/` and `Racing/` |
-| 4 Implementation and Development Process | building the assets, the chassis-collapse defect, iterative reward design, evaluation tooling | `Simulation/`, `Evaluation/Verification_and_Testing/` |
+| 3 System Design and Methodology | custom vehicle, tracks, and environments; reward terms; PPO setup; parallel architecture; self-play; evaluation protocol | `1_simulation_scenes/`; environment files in `2_python_scripts/` (`b_single_car/`, `e_curvature_lookahead/`, `f_racing_line/`, `g_two_car_racing/`) |
+| 4 Implementation and Development Process | building the assets, the chassis-collapse defect, iterative reward design, evaluation tooling | `2_python_scripts/a_simulation_setup/`, `2_python_scripts/i_verification/` |
 | 5 Single-Vehicle Results | baseline, smoothness term, pure pursuit, behavioral cloning, curvature look-ahead, racing line (RQ1, RQ2) | §2–§6, §8 |
 | 6 Two-Vehicle Self-Play Results | 109 training rounds, zero-shot transfer and adaptation, reward redesign, race evaluation, the 100-million-step milestone, what decides a race (lock-in), staggered-start training, head-to-head (RQ3, RQ4) | §7, §8 |
 | 7 Discussion and Conclusion | answers to the research questions, challenges and limitations, future work | – |
-| Appendix A | reward configuration and end-of-round statistics of every round of every lineage | training logs (kept locally), `rl_journal.html` |
+| Appendix A | reward configuration and end-of-round statistics of every round of every lineage | `6_training_logs/` (full training logs kept locally), `7_journal/rl_journal.html` |
 
 Answers to the research questions:
 
@@ -42,6 +42,33 @@ Answers to the research questions:
 - **RQ2** — Behavioral cloning did not help here; the demonstrations did not match the task, so whether matched demonstrations would help remains open.
 - **RQ3** — Two cars under one shared self-play policy drive close to top speed, but neither reward changes nor 100 million steps nor staggered training starts produced contested racing: the car ahead after the first corner keeps the lead.
 - **RQ4** — A policy trained on one track drove an unseen track within 8% of the adapted lap time; three million steps of adaptation closed the gap.
+
+## Folder layout
+
+The files are sorted by type. Every script finds its files relative to its own location, so the folder can be placed anywhere.
+
+| Folder | Contents |
+|---|---|
+| `1_simulation_scenes/` | Isaac Sim scenes (`.usd`): the car and the tracks |
+| `2_python_scripts/` | all code (`.py`), one subfolder per part of the project (below), plus `check_results.py` |
+| `3_trained_models/` | trained policies (`.zip`); `checkpoints/` holds one per training round |
+| `4_results/` | evaluation results (`.json`, `.csv`) and the two evaluation write-ups (`.md`) |
+| `5_data/` | recorded human driving (`.npz`) |
+| `6_training_logs/` | training monitors, one line per training episode (`.csv`) |
+| `7_journal/` | `rl_journal.html`, the full development record |
+| `run_output/` | status, log and telemetry files the scripts write while running (not tracked) |
+
+| Subfolder of `2_python_scripts/` | Part of the project |
+|---|---|
+| `a_simulation_setup/` | building the car and the original track (§1) |
+| `b_single_car/` | single-car PPO baseline (§2) |
+| `c_behavioral_cloning/` | behavior-cloning experiment (§3) |
+| `d_pure_pursuit/` | classical pure-pursuit baseline (§4) |
+| `e_curvature_lookahead/` | parallel training + curvature look-ahead (§5) |
+| `f_racing_line/` | racing-line reward variant (§6) |
+| `g_two_car_racing/` | two-car self-play racing (§7) |
+| `h_evaluation/` | comparative evaluation (§8) |
+| `i_verification/` | verification and testing (§9) |
 
 ## Pipeline Overview
 
@@ -65,7 +92,7 @@ The base car model and track used by the early lineages were built directly in I
 
 Implemented in:
 
-`Simulation/Simulation_Environment_Setup/create_simple_car.py`, `create_track.py`, `add_car_body.py`, `add_second_car.py`, `remove_car_body.py`, `set_front_wheel_drive.py`, `drive_car.py`
+`2_python_scripts/a_simulation_setup/create_simple_car.py`, `create_track.py`, `add_car_body.py`, `add_second_car.py`, `remove_car_body.py`, `set_front_wheel_drive.py`, `drive_car.py`
 
 ### Workflow
 ```
@@ -102,7 +129,7 @@ Pure reinforcement learning, no imitation data, trained to follow a reference li
 
 Implemented in:
 
-`Baselines/Single_Car_Baseline/car_track_env.py`, `train_car2.py`, `run_dual_car.py`, `compare_smoothness.py`
+`2_python_scripts/b_single_car/car_track_env.py`, `train_car2.py`, `run_dual_car.py`, `compare_smoothness.py`
 
 ### Workflow
 ```
@@ -130,7 +157,7 @@ Trained across 7 incremental rounds, progressively raising the centering/off-tra
 (The logs show rounds 2–3 as a single process from 50k to 150k steps; the split into two weight sets follows the project journal.)
 
 ### Output
-`car2_ppo_model.zip` — the **700k smoothness policy**. The 450k policy is `checkpoint_backups/car2_ppo_model_pre_smoothness.zip`. `run_dual_car.py` deploys it live: car 1 keyboard-driven, car 2 policy-driven, with an auto-recovery net that teleports the car back onto the reference line if it drifts off-track.
+`car2_ppo_model.zip` — the **700k smoothness policy**. The 450k policy is `3_trained_models/checkpoints/car2_ppo_model_pre_smoothness.zip`. `run_dual_car.py` deploys it live: car 1 keyboard-driven, car 2 policy-driven, with an auto-recovery net that teleports the car back onto the reference line if it drifts off-track.
 
 ### Notes
 - The reference line of this stage is the road centerline shifted by +3 m in y (the stage was derived from a two-lane scene), and the car drives the original vertex order, which is **clockwise seen from above**.
@@ -145,7 +172,7 @@ An attempt to warm-start the single-car policy from human driving demonstrations
 
 Implemented in:
 
-`Baselines/BC_Finetuning_Experiment/record_driving.py`, `pretrain_bc.py`, `warmup_critic.py`, `finetune_bc.py` (`_v2` through `_v5`)
+`2_python_scripts/c_behavioral_cloning/record_driving.py`, `pretrain_bc.py`, `warmup_critic.py`, `finetune_bc.py` (`_v2` through `_v5`)
 
 ### Workflow
 ```
@@ -180,7 +207,7 @@ A non-learned control baseline, to measure how much a learned policy actually ga
 
 Implemented in:
 
-`Baselines/Classical_Baseline/pure_pursuit_baseline.py`
+`2_python_scripts/d_pure_pursuit/pure_pursuit_baseline.py`
 
 ### Workflow
 ```
@@ -207,7 +234,7 @@ An experimental lineage combining two changes at once: parallel training for spe
 
 Implemented in:
 
-`Racing/Vec_Curvature_Lineage/build_vec_track_env.py`, `build_vec_deploy_stage.py`, `car_track_vec_env.py`, `train_car2_vec.py`, `run_dual_car_vec.py`
+`2_python_scripts/e_curvature_lookahead/build_vec_track_env.py`, `build_vec_deploy_stage.py`, `car_track_vec_env.py`, `train_car2_vec.py`, `run_dual_car_vec.py`
 
 ### Workflow
 ```
@@ -237,7 +264,7 @@ A reward-shaping experiment: loosen the centerline-adherence penalty and let the
 
 Implemented in:
 
-`Racing/Racing_Line_Variant/car_track_racingline_vec_env.py`, `train_car2_racingline.py`
+`2_python_scripts/f_racing_line/car_track_racingline_vec_env.py`, `train_car2_racingline.py`
 
 ### Workflow
 ```
@@ -276,7 +303,7 @@ Two cars share one track and are driven by a single shared policy network (self-
 
 Implemented in:
 
-`Racing/Two_Car_Self_Play_Racing/build_race_track_env.py`, `build_race_deploy_stage.py`, `car_race_vec_env.py`, `train_race_vec.py`, `run_race_demo.py`, `run_race_solo_demo.py`, `run_race_playable_demo.py`, `diag_race_solver_fix.py`, `run_accel_demo.py`
+`2_python_scripts/g_two_car_racing/build_race_track_env.py`, `build_race_deploy_stage.py`, `car_race_vec_env.py`, `train_race_vec.py`, `run_race_demo.py`, `run_race_solo_demo.py`, `run_race_playable_demo.py`, `diag_race_solver_fix.py`, `run_accel_demo.py`
 
 Stadium track: `build_unknown_track_deploy.py`, `build_unknown_track_train.py`, `car_unknown_track_env.py`, `train_unknown_track.py`, `run_unknown_track_demo.py`, `test_baseline_track_eval.py`, `test_unknown_track_generalization.py`, `lap_time_benchmark.py`, `compare_two_car_smoothness.py`
 
@@ -313,15 +340,15 @@ Key episodes along the way:
 
 1. **Collision (proximity) penalty:** 5.0 per step within 1.8 m (normal overtaking distance on a 9 m track) was 15–50× larger than every other per-step term; the full-length rate fell 79% → 44% within round 2. Fixed to 0.4 within 1.2 m from round 3. A later value of 3.0 reproduced the same pathology more slowly and was backed off to 1.5.
 2. **Chassis-collapse bug:** under throttle, a car's chassis settled at exactly 0.2 m, half its box height. Five car-side fixes and a ground physics material changed nothing; the cause was the ground collider's **shape** — a finite box instead of an analytic plane. Switching to `PhysicsSchemaTools.addGroundPlane` removed it (stress-test height error 0.000 m over 400 steps; 2.35% residual recovery rate with the trained policy).
-3. **Regression after the fix:** correcting the training ground in the same round as a centering-weight change crashed the full-length rate to 4–6%. Reverting only the reward change started the recovery — hence the rule "one change per round" and the checkpoint versioning (`checkpoint_backups/`, from round 29).
+3. **Regression after the fix:** correcting the training ground in the same round as a centering-weight change crashed the full-length rate to 4–6%. Reverting only the reward change started the recovery — hence the rule "one change per round" and the checkpoint versioning (`3_trained_models/checkpoints/`, from round 29).
 4. **Stadium track:** 40 m / 8 m straights and 6 m corners (vs. 16 m straights and 10 m corners), same width. Zero-shot, the run-49 policy reached the time limit as often as on its own track (93.3%), but its reward fell from +141.7 to −155.5 (see §8 for what that meant physically). Adaptation training continued the same network on an 8-pair stadium stage.
 5. **Reward redesign:** a lap-time benchmark revealed a slowdown by round 12 (22.1 s → 25.7 s flying laps in the benchmark) and demos showed one car following the other; throttle bonus and an overtaking incentive were added, then a smoothness term after the driving looked jerky, then a larger overtaking incentive.
 6. **Spawn-position bias:** the stadium deploy stage spawns both cars at fixed positions; the car in position B (the inside of the first corner) led at every lap line in 6 of 8 benchmarks. `run_unknown_track_demo.py` and `lap_time_benchmark.py` now swap the starting positions at random (the demo swaps the authored USD translates before `World.reset()`; a runtime teleport before `world.play()` froze the rendered demo after 90 control actions). The swap alone did not remove the effect, because the cause is not the spawn spot — see 7.
 7. **Lock-in, not a stronger car (2026-09-24):** with the final checkpoint car B led at all ten lap lines from both spawn spots. Comparing every authored attribute of the two cars found no physical difference; a per-step trace shows a mirror-image start, with the outcome decided in the first corner (20–37 m in), where the early leader either runs wide and yields (~2 m/s) or keeps its line. Whichever car starts even a few tenths of a metre further forward leads at the end in 75–83% of 24-heat tests; the follower then stays ~13 m behind. A mirrored design (every physical start played by both cars) gave the same start the win in 11 of 12 seeds; the benchmark's fixed start is a near tie decided by numerical noise. An earlier reading of the first test (car B led 18 of 24) was an artifact of shared random offsets and is withdrawn.
-8. **Staggered-start training (discarded):** `train_unknown_track.py` accepts a third argument `stagger_prob` (for the run above `0.75`), which makes `car_unknown_track_env.py` start the trailing car 1.5–8 m behind the leader on a random side. Three rounds (3M steps) with the reward unchanged kept the training statistics healthy (95–100% full-length) but degraded the driving: overtaking from behind 8/36 → 1/36 heats, clean race-evaluation heats 12/12 → 4/12, 7 vehicles off the track (0 before), flying laps 22.78 → 24.04 s (mean over all heats). Nine of eleven first incidents came after step 500, beyond the 500-step training episodes — evaluation must use the full 2,000-step horizon. The checkpoint was rolled back to the 100M policy (`checkpoint_backups/`).
+8. **Staggered-start training (discarded):** `train_unknown_track.py` accepts a third argument `stagger_prob` (for the run above `0.75`), which makes `car_unknown_track_env.py` start the trailing car 1.5–8 m behind the leader on a random side. Three rounds (3M steps) with the reward unchanged kept the training statistics healthy (95–100% full-length) but degraded the driving: overtaking from behind 8/36 → 1/36 heats, clean race-evaluation heats 12/12 → 4/12, 7 vehicles off the track (0 before), flying laps 22.78 → 24.04 s (mean over all heats). Nine of eleven first incidents came after step 500, beyond the 500-step training episodes — evaluation must use the full 2,000-step horizon. The checkpoint was rolled back to the 100M policy (`3_trained_models/checkpoints/`).
 
 ### Output
-`car_race_ppo_model.zip` — the final checkpoint, competition round 11 (100,000,000 steps; the 100M milestone; the staggered-start experiment was rolled back to it). Every round from original-track round 29 onward (plus round 27), including run 49 and competition round 6 (95,172,864 steps, the previous final checkpoint), is in `checkpoint_backups/` (see [Checkpoints](#checkpoints)).
+`car_race_ppo_model.zip` — the final checkpoint, competition round 11 (100,000,000 steps; the 100M milestone; the staggered-start experiment was rolled back to it). Every round from original-track round 29 onward (plus round 27), including run 49 and competition round 6 (95,172,864 steps, the previous final checkpoint), is in `3_trained_models/checkpoints/` (see [Checkpoints](#checkpoints)).
 
 ### Notes
 Measured with the race evaluation (§8), the final policy laps the stadium track in 22.78 s (12 of 12 heats free of incident) and the original track in 21.58 s (10 of 12 heats free of incident; brief chassis-height events in two, no vehicle left the track) — but it does not race: the car ahead after the first corner leads to the end (0 lead changes in 12 heats per track; on the stadium track the inside starter led in 11 of 12). Compared with stadium round 3 (22.05 s, action delta 0.042), the final policy is 3.3% slower and about three times less smooth (0.127): the redesign reversed the round-12 slowdown but did not improve on round 3. Compared with competition round 6, the five further rounds (4.8M steps) raised the training returns by roughly a tenth but left the driving marginally slower (+0.15 s), wider (0.29 m vs. 0.16 m mean offset) and no more competitive; with one run per configuration and 12 heats per checkpoint these differences are descriptive. The jerky driving had already built up during phase E, before the overtaking terms existed, and the smoothness term's effect faded after smoothness round 20.
@@ -334,7 +361,7 @@ Direct physical measurements of every lineage, written to check headline results
 
 Implemented in:
 
-`Evaluation/Comparative_Evaluation/common_metric_eval.py`, `collapse_reward_diagnostic.py`, `head_to_head_eval.py`, `two_car_race_eval.py`, `start_condition_eval.py`, `start_trace.py`, `stagger_eval.py` (earlier, superseded: `race_mixed_policy_eval.py`, `run_mixed_race_demo.py`)
+`2_python_scripts/h_evaluation/common_metric_eval.py`, `collapse_reward_diagnostic.py`, `head_to_head_eval.py`, `two_car_race_eval.py`, `start_condition_eval.py`, `start_trace.py`, `stagger_eval.py` (earlier, superseded: `race_mixed_policy_eval.py`, `run_mixed_race_demo.py`)
 
 ### Workflow
 ```
@@ -421,7 +448,7 @@ Utility and diagnostic scripts used during development to validate track geometr
 
 Implemented in:
 
-`Evaluation/Verification_and_Testing/test_car_track_env.py`, `test_xform_order.py`, `validate_clockwise.py`, `verify_car.py`, `verify_deploy_fixes.py`, `verify_track.py`, `verify_vec_track_env.py`, `smoke_test_race_env.py`, `smoke_test_vec_env.py`, `diagnose_stage.py`
+`2_python_scripts/i_verification/test_car_track_env.py`, `test_xform_order.py`, `validate_clockwise.py`, `verify_car.py`, `verify_deploy_fixes.py`, `verify_track.py`, `verify_vec_track_env.py`, `smoke_test_race_env.py`, `smoke_test_vec_env.py`, `diagnose_stage.py`
 
 ---
 
@@ -433,7 +460,7 @@ Implemented in:
 - Two tracks from one family (four straights, four circular corners, same width); training episodes last 33 s (500 control steps) while race evaluations run 2,000 steps, and some failures only appear in the longer runs (the staggered-start experiment showed this).
 - The curvature-lookahead and racing-line lineages were never retrained on corrected ground.
 - The self-play setup uses two identical cars and one shared network; it did not produce contested racing, neither after reward changes, nor after 100 million steps, nor with staggered training starts. Evaluation samples are small (12 heats per checkpoint and track, 24 heats per start-condition test, one training run per configuration), so differences between checkpoints are descriptive.
-- Monitor CSVs are overwritten by every round, so per-quarter statistics of early rounds survive only in the records written at the time (`rl_journal.html`).
+- Monitor CSVs are overwritten by every round, so per-quarter statistics of early rounds survive only in the records written at the time (`7_journal/rl_journal.html`).
 
 ## Requirements
 
@@ -443,33 +470,24 @@ Implemented in:
 All scripts are run via Isaac Sim's bundled Python interpreter, e.g.:
 
 ```
-python.bat Racing/Two_Car_Self_Play_Racing/train_race_vec.py 1000000
-python.bat Racing/Two_Car_Self_Play_Racing/train_unknown_track.py 1000000 <run_label> 0.75   # stadium track, optional staggered starts
-python.bat Evaluation/Comparative_Evaluation/two_car_race_eval.py stadium 12 2000 100M_milestone
+python.bat 2_python_scripts/g_two_car_racing/train_race_vec.py 1000000
+python.bat 2_python_scripts/g_two_car_racing/train_unknown_track.py 1000000 <run_label> 0.75   # stadium track, optional staggered starts
+python.bat 2_python_scripts/h_evaluation/two_car_race_eval.py stadium 12 2000 100M_milestone
 ```
 
-The scripts contain the absolute path of the author's working folder (`C:/Users/sanja/Desktop/thesis`); replace it with the path of your copy before running them, for example in PowerShell:
-
-```powershell
-$REPO = "C:\fsae_rl_racing"   # your clone
-$new  = $REPO.Replace('\', '/')
-Get-ChildItem $REPO -Recurse -Filter *.py | ForEach-Object {
-    $s = [IO.File]::ReadAllText($_.FullName)
-    [IO.File]::WriteAllText($_.FullName, $s.Replace('C:/Users/sanja/Desktop/thesis', $new))
-}
-```
+Every script finds the scenes, models and results relative to its own location, so the project folder can be placed anywhere and the scripts can be started from any working directory.
 
 ## Checking the results without the simulator
 
-`check_results.py` (repository root, standard-library Python; NumPy only for its last part) recomputes the thesis numbers from the committed result files: the race-evaluation lap statistics over incident-free heats, the totals over the 108 stadium heats, the lock-in, mirrored and passing tests, the training steps stored in each model file, and the direction of travel in the behavioral-cloning datasets.
+`2_python_scripts/check_results.py` (standard-library Python; NumPy only for its last part) recomputes the thesis numbers from the committed result files: the race-evaluation lap statistics over incident-free heats, the totals over the 108 stadium heats, the lock-in, mirrored and passing tests, the training steps stored in each model file, and the direction of travel in the behavioral-cloning datasets.
 
 ```
-python check_results.py
+python 2_python_scripts/check_results.py
 ```
 
 ## Checkpoints
 
-`checkpoint_backups/` holds one Stable-Baselines3 checkpoint per training round (87 files, 14 MB); the evaluation scripts load them by label, `car_race_ppo_model_<label>.zip`.
+`3_trained_models/checkpoints/` holds one Stable-Baselines3 checkpoint per training round (87 files, 14 MB); the evaluation scripts load them by label, `car_race_ppo_model_<label>.zip`.
 
 | Label | Thesis name | Steps |
 |---|---|---|
