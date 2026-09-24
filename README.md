@@ -130,7 +130,7 @@ Trained across 7 incremental rounds, progressively raising the centering/off-tra
 (The logs show rounds 2–3 as a single process from 50k to 150k steps; the split into two weight sets follows the project journal.)
 
 ### Output
-`car2_ppo_model.zip` — the **700k smoothness policy**. The 450k policy is kept locally in `checkpoint_backups/` (gitignored). `run_dual_car.py` deploys it live: car 1 keyboard-driven, car 2 policy-driven, with an auto-recovery net that teleports the car back onto the reference line if it drifts off-track.
+`car2_ppo_model.zip` — the **700k smoothness policy**. The 450k policy is `checkpoint_backups/car2_ppo_model_pre_smoothness.zip`. `run_dual_car.py` deploys it live: car 1 keyboard-driven, car 2 policy-driven, with an auto-recovery net that teleports the car back onto the reference line if it drifts off-track.
 
 ### Notes
 - The reference line of this stage is the road centerline shifted by +3 m in y (the stage was derived from a two-lane scene), and the car drives the original vertex order, which is **clockwise seen from above**.
@@ -321,7 +321,7 @@ Key episodes along the way:
 8. **Staggered-start training (discarded):** `train_unknown_track.py` accepts a third argument `stagger_prob` (for the run above `0.75`), which makes `car_unknown_track_env.py` start the trailing car 1.5–8 m behind the leader on a random side. Three rounds (3M steps) with the reward unchanged kept the training statistics healthy (95–100% full-length) but degraded the driving: overtaking from behind 8/36 → 1/36 heats, clean race-evaluation heats 12/12 → 4/12, 7 vehicles off the track (0 before), flying laps 22.78 → 24.04 s (mean over all heats). Nine of eleven first incidents came after step 500, beyond the 500-step training episodes — evaluation must use the full 2,000-step horizon. The checkpoint was rolled back to the 100M policy (`checkpoint_backups/`).
 
 ### Output
-`car_race_ppo_model.zip` — the final checkpoint, competition round 11 (100,000,000 steps; the 100M milestone; the staggered-start experiment was rolled back to it). The run-49 original-track checkpoint and every later round, including competition round 6 (95,172,864 steps, the previous final checkpoint), are kept locally in `checkpoint_backups/` (gitignored).
+`car_race_ppo_model.zip` — the final checkpoint, competition round 11 (100,000,000 steps; the 100M milestone; the staggered-start experiment was rolled back to it). Every round from original-track round 29 onward (plus round 27), including run 49 and competition round 6 (95,172,864 steps, the previous final checkpoint), is in `checkpoint_backups/` (see [Checkpoints](#checkpoints)).
 
 ### Notes
 Measured with the race evaluation (§8), the final policy laps the stadium track in 22.78 s (12 of 12 heats free of incident) and the original track in 21.58 s (10 of 12 heats free of incident; brief chassis-height events in two, no vehicle left the track) — but it does not race: the car ahead after the first corner leads to the end (0 lead changes in 12 heats per track; on the stadium track the inside starter led in 11 of 12). Compared with stadium round 3 (22.05 s, action delta 0.042), the final policy is 3.3% slower and about three times less smooth (0.127): the redesign reversed the round-12 slowdown but did not improve on round 3. Compared with competition round 6, the five further rounds (4.8M steps) raised the training returns by roughly a tenth but left the driving marginally slower (+0.15 s), wider (0.29 m vs. 0.16 m mean offset) and no more competitive; with one run per configuration and 12 heats per checkpoint these differences are descriptive. The jerky driving had already built up during phase E, before the overtaking terms existed, and the smoothness term's effect faded after smoothness round 20.
@@ -448,4 +448,27 @@ python.bat Racing/Two_Car_Self_Play_Racing/train_unknown_track.py 1000000 <run_l
 python.bat Evaluation/Comparative_Evaluation/two_car_race_eval.py stadium 12 2000 100M_milestone
 ```
 
-Checkpoint labels in the evaluation scripts (e.g. `run49`, `newtrack_compete_run6`, `100M_milestone`) refer to the versioned backups in `checkpoint_backups/`, which are kept locally and not included in the repository.
+The scripts contain the absolute path of the author's working folder (`C:/Users/sanja/Desktop/thesis`); replace it with the path of your copy before running them. The instruction manual that accompanies the thesis gives a one-line command for this, the full setup, and the expected result of every evaluation.
+
+## Checking the results without the simulator
+
+`check_results.py` (repository root, standard-library Python; NumPy only for its last part) recomputes the thesis numbers from the committed result files: the race-evaluation lap statistics over incident-free heats, the totals over the 108 stadium heats, the lock-in, mirrored and passing tests, the training steps stored in each model file, and the direction of travel in the behavioral-cloning datasets.
+
+```
+python check_results.py
+```
+
+## Checkpoints
+
+`checkpoint_backups/` holds one Stable-Baselines3 checkpoint per training round (87 files, 14 MB); the evaluation scripts load them by label, `car_race_ppo_model_<label>.zip`.
+
+| Label | Thesis name | Steps |
+|---|---|---|
+| `car2_ppo_model_pre_smoothness` | single-car baseline, 450k policy | 450k |
+| `run27`, `run29` … `run49` | original track, rounds 27 and 29–49 (versioning began at round 29) | 18.1–40.1M |
+| `newtrack_run1` … `newtrack_run12` | stadium rounds 1–12 (phase E) | 41.1–52.1M |
+| `newtrack_overtake_run1`, `_run2` | overtaking rounds 1–2 (phase F) | 53.1–54.1M |
+| `newtrack_smooth_run1` … `_run35` | smoothness rounds 1–35 (phase G) | 55.1–89.2M |
+| `newtrack_compete_run1` … `_run11` | competition rounds 1–11 (phases H and I) | 90.2–100.0M |
+| `100M_milestone` | competition round 11, identical to `newtrack_compete_run11` and to `car_race_ppo_model.zip` | 100,000,000 |
+| `newtrack_stagger_run1` … `_run3` | discarded staggered-start rounds | 101.0–103.0M |
