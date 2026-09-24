@@ -14,7 +14,9 @@ the new geometry directly, rather than starting a separate lineage from
 scratch - run49's weights (and the original track's whole 40M-step lineage)
 are preserved in checkpoint_backups/, so this is fully reversible.
 
-Usage: python.bat train_unknown_track.py [total_timesteps] [run_label]
+Usage: python.bat train_unknown_track.py [total_timesteps] [run_label] [stagger_prob]
+       stagger_prob (default 0 = always side by side): fraction of resets where the
+       trailing car starts 1.5-8 m behind the leader (see car_unknown_track_env.py).
 """
 
 import os
@@ -28,11 +30,12 @@ from car_unknown_track_env import UnknownTrackVecEnv, NUM_PAIRS
 
 TOTAL_TIMESTEPS = int(sys.argv[1]) if len(sys.argv) > 1 else 2000
 RUN_LABEL = sys.argv[2] if len(sys.argv) > 2 else None
+STAGGER_PROB = float(sys.argv[3]) if len(sys.argv) > 3 else 0.0  # fraction of resets with a staggered start
 MODEL_PATH = "C:/Users/sanja/Desktop/thesis/Racing/Two_Car_Self_Play_Racing/car_race_ppo_model"
 LOG_PATH = "C:/Users/sanja/Desktop/thesis/Racing/Two_Car_Self_Play_Racing/car_unknown_track_train_monitor.csv"
 BACKUP_DIR = "C:/Users/sanja/Desktop/thesis/checkpoint_backups"
 
-env = VecMonitor(UnknownTrackVecEnv(num_pairs=NUM_PAIRS, headless=True), filename=LOG_PATH)
+env = VecMonitor(UnknownTrackVecEnv(num_pairs=NUM_PAIRS, headless=True, stagger_prob=STAGGER_PROB), filename=LOG_PATH)
 
 if os.path.exists(MODEL_PATH + ".zip"):
     model = PPO.load(MODEL_PATH, env=env, device="cpu")

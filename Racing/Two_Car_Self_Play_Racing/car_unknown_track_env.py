@@ -68,6 +68,8 @@ OFF_TRACK_PENALTY = 150.0
 THROTTLE_BONUS_WEIGHT = 0.30
 LOOKAHEAD_DIST = 5.0
 START_LATERAL_SPACING = 1.5
+STAGGER_MIN = 1.5
+STAGGER_MAX = 8.0
 COLLISION_DIST = 1.2
 COLLISION_PENALTY = 1.5
 OPPONENT_GAP_CLIP = 30.0
@@ -132,7 +134,7 @@ def build_centerline():
 
 
 class UnknownTrackVecEnv(VecEnv):
-    def __init__(self, num_pairs=NUM_PAIRS, headless=True):
+    def __init__(self, num_pairs=NUM_PAIRS, headless=True, stagger_prob=0.0):
         get_simulation_app(headless=headless)
 
         from isaacsim.core.api import World
@@ -183,6 +185,7 @@ class UnknownTrackVecEnv(VecEnv):
         self._last_opp_gap = np.zeros(num_envs, dtype=np.float64)
         self._last_action = np.zeros((num_envs, 2), dtype=np.float32)
         self._rng = np.random.default_rng()
+        self._stagger_prob = float(stagger_prob)
         self._actions = None
 
         self._world.play()
@@ -213,6 +216,18 @@ class UnknownTrackVecEnv(VecEnv):
         x0, y0 = self._points[-1]
         x1, y1 = self._points[0]
         return math.atan2(y1 - y0, x1 - x0)
+
+    def _pose_at_progress(self, s):
+        s = s % self._track_length
+        for i in range(self._n_segments):
+            if self._cumulative[i] <= s <= self._cumulative[i + 1]:
+                break
+        x0, y0 = self._points[i]
+        x1, y1 = self._points[(i + 1) % self._n_segments]
+        dx, dy = x1 - x0, y1 - y0
+        seg_len = math.hypot(dx, dy)
+        t = (s - self._cumulative[i]) / seg_len
+        return x0 + t * dx, y0 + t * dy, math.atan2(dy, dx), -dy / seg_len, dx / seg_len
 
     def _own_state(self, idx, pos, quat, lin_vel, ang_vel):
         lx, ly = pos[0] - self._offsets[idx, 0], pos[1] - self._offsets[idx, 1]
@@ -266,10 +281,38 @@ class UnknownTrackVecEnv(VecEnv):
             ox, oy = self._offsets[slot_a]
             pos_a = [x0 + nx * START_LATERAL_SPACING + ox, y0 + ny * START_LATERAL_SPACING + oy, CHASSIS_Z]
             pos_b = [x0 - nx * START_LATERAL_SPACING + ox, y0 - ny * START_LATERAL_SPACING + oy, CHASSIS_Z]
+            quat_a = quat_b = quat
+
+            # 2026-09-24: staggered start (opt-in via stagger_prob, used by
+            # train_unknown_track.py). Every earlier round started the two cars
+            # exactly side by side, so the policy never had to overtake and
+            # converged to a follow-the-leader lock-in (the car a few tenths of
+            # a metre ahead after the first corner stays ~13 m ahead). Here the
+            # trailing car starts STAGGER_MIN..STAGGER_MAX metres behind the
+            # leader along the centerline, on a random side; which car leads
+            # and which side each takes are both random.
+            if self._stagger_prob > 0.0 and float(self._rng.random()) < self._stagger_prob:
+                gap = float(self._rng.uniform(STAGGER_MIN, STAGGER_MAX))
+                a_leads = bool(self._rng.random() < 0.5)
+                a_side = 1.0 if self._rng.random() < 0.5 else -1.0
+                s_lead = self._cumulative[seg]
+                lead = self._pose_at_progress(s_lead)
+                trail = self._pose_at_progress(s_lead - gap)
+                pose_a, pose_b = (lead, trail) if a_leads else (trail, lead)
+                quats = []
+                poss = []
+                for pose, side in ((pose_a, a_side), (pose_b, -a_side)):
+                    px, py, tang, pnx, pny = pose
+                    poss.append([px + pnx * side * START_LATERAL_SPACING + ox,
+                                 py + pny * side * START_LATERAL_SPACING + oy, CHASSIS_Z])
+                    half = (tang + float(self._rng.uniform(-0.1, 0.1))) / 2.0
+                    quats.append([math.cos(half), 0.0, 0.0, math.sin(half)])
+                pos_a, pos_b = poss
+                quat_a, quat_b = quats
 
             slot_indices.extend([slot_a, slot_b])
             positions.extend([pos_a, pos_b])
-            orientations.extend([quat, quat])
+            orientations.extend([quat_a, quat_b])
 
         idx_arr = np.array(slot_indices)
         self._car.set_world_poses(

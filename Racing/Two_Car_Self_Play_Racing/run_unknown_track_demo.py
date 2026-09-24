@@ -27,7 +27,7 @@ from stable_baselines3 import PPO
 
 from isaacsim.core.api import World
 from isaacsim.core.prims import Articulation
-from isaacsim.core.utils.stage import open_stage
+from isaacsim.core.utils.stage import get_current_stage, open_stage
 
 from car_unknown_track_env import CHASSIS_Z, OFF_TRACK_MARGIN, build_centerline, wrap_to_pi
 
@@ -44,6 +44,29 @@ RECOVERY_MARGIN = OFF_TRACK_MARGIN
 
 open_stage(CAR_USD)
 
+# unknown_track.usd's two spawn spots (build_unknown_track_deploy.py, (0,-1.5)
+# and (0,1.5)) are fixed, and one is mildly favorable into the first corner,
+# so the same car always won (swap test 2026-09-23: the win follows the spot,
+# not the car). Randomly swap which car starts where. Done here, on the
+# authored USD translates BEFORE World.reset(): every rigid body of each car
+# (chassis, wheels, knuckles) is a direct child of /World/CarX with its own
+# world-space translate, so moving them all by the chassis-to-chassis offset
+# relocates the whole car with no runtime teleport. The earlier runtime
+# version (set_world_poses + world.step before world.play()) froze this
+# rendered demo at exactly 90 control actions.
+_swapped = bool(np.random.default_rng().random() < 0.5)
+if _swapped:
+    _stage = get_current_stage()
+    _root_a, _root_b = _stage.GetPrimAtPath("/World/CarA"), _stage.GetPrimAtPath("/World/CarB")
+    _delta = (_root_b.GetChild("chassis").GetAttribute("xformOp:translate").Get()
+              - _root_a.GetChild("chassis").GetAttribute("xformOp:translate").Get())
+    for _root, _shift in ((_root_a, _delta), (_root_b, -_delta)):
+        for _child in _root.GetChildren():
+            _attr = _child.GetAttribute("xformOp:translate")
+            if _attr and _attr.IsValid():
+                _attr.Set(_attr.Get() + _shift)
+print(f"[spawn-swap] cars swapped this run: {_swapped}", flush=True)
+
 settings = carb.settings.get_settings()
 settings.set_bool("/physics/updateToUsd", True)
 settings.set_bool("/app/useFabricSceneDelegate", False)
@@ -57,23 +80,6 @@ car_a.initialize()
 car_b = Articulation(prim_paths_expr="/World/CarB/chassis")
 car_b.initialize()
 cars = [car_a, car_b]
-
-# 2026-09-23: unknown_track.usd's two spawn points (build_unknown_track_deploy.py,
-# (0,-1.5) and (0,1.5)) are fixed and never randomized, so whichever physical
-# spot is mildly favorable for the first corner always wins - confirmed via a
-# one-off swap test (car A and B's win rates were identical once positions
-# were swapped, and the win stayed with the position, not the car). Randomly
-# swapping which car occupies which spawn point each run removes this
-# deterministic labeling bias without changing the actual track/physics.
-if np.random.default_rng().random() < 0.5:
-    pos_a, orient_a = car_a.get_world_poses()
-    pos_b, orient_b = car_b.get_world_poses()
-    car_a.set_world_poses(positions=pos_b, orientations=orient_b)
-    car_b.set_world_poses(positions=pos_a, orientations=orient_a)
-    car_a.set_velocities(np.zeros((1, 6)))
-    car_b.set_velocities(np.zeros((1, 6)))
-    for _ in range(2):
-        world.step(render=False)
 
 policy = PPO.load(MODEL_PATH, device="cpu")
 points, cumulative = build_centerline()

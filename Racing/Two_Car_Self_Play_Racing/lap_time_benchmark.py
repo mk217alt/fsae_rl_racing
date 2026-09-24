@@ -68,7 +68,8 @@ names = ["Car A", "Car B"]
 # were swapped, and the win stayed with the position, not the car). Randomly
 # swapping which car occupies which spawn point each run removes this
 # deterministic labeling bias without changing the actual track/physics.
-if np.random.default_rng().random() < 0.5:
+swapped = bool(np.random.default_rng().random() < 0.5)
+if swapped:
     pos_a, orient_a = car_a.get_world_poses()
     pos_b, orient_b = car_b.get_world_poses()
     car_a.set_world_poses(positions=pos_b, orientations=orient_b)
@@ -156,6 +157,7 @@ def log(msg):
 
 
 log(f"10-lap timing benchmark, checkpoint={MODEL_PATH}.zip, track=unknown_track.usd, N_LAPS={N_LAPS}")
+log(f"spawn swap this run (Car A and Car B start spots exchanged): {swapped}")
 
 last_progress = [None, None]
 cumulative_distance = [0.0, 0.0]
