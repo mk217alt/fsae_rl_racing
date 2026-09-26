@@ -295,7 +295,7 @@ for label in LABELS:
         "mean_abs_gap_m": round(float(np.mean([h["mean_abs_gap_m"] for h in heats])), 2),
         "left_start_leads_at_end": int(sum(h["final_leader"] == "A" for h in heats)),
     }
-    result = {"stage": STAGE, "ground_prim_types": ground_types, "checkpoint": label, "track": TRACK,
+    result = {"stage": _os.path.relpath(STAGE, ROOT).replace("\\", "/"), "ground_prim_types": ground_types, "checkpoint": label, "track": TRACK,
               "track_length_m": round(L, 2), "control_steps_per_heat": STEPS, "start_segments": starts,
               "lead_hysteresis_m": LEAD_HYSTERESIS, "summary": summary, "heats": heats}
     with open(f"{OUT_DIR}/two_car_race_{TRACK}_{label}.json", "w") as f:

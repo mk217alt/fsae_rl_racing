@@ -1,5 +1,5 @@
 {
- "stage": "C:/Users/sanja/Desktop/thesis/Racing/Two_Car_Self_Play_Racing/race_deploy.usd",
+ "stage": "1_simulation_scenes/race_deploy.usd",
  "ground_prim_types": [
   "Mesh",
   "Plane",

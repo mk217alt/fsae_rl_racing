@@ -1,5 +1,5 @@
 # check_results.py - recomputes the thesis numbers from the result files.
-# Run it from anywhere:   python 2_python_scripts\check_results.py
+# Run it from anywhere:   python 2_python_scripts/check_results.py   (Python 3; NumPy only for part 6)
 import csv, glob, json, os, statistics, zipfile
 
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))  # the project folder
@@ -30,7 +30,7 @@ s = [json.load(open(f"{EV}two_car_race_stadium_{l}.json"))["summary"] for l in l
 print(f"   heats {sum(x['heats'] for x in s)}, lead changes {sum(x['lead_changes_total'] for x in s)}, "
       f"inside starter leads at the end {sum(x['left_start_leads_at_end'] for x in s)}")
 
-print("3) Lock-in and passing tests (Thesis 6.8-6.9)")
+print("3) Lock-in and passing tests (Thesis 6.8, 6.10)")
 for n in ["start_offsets_competition_round4.csv", "start_offsets_competition_round6.csv",
           "start_offsets_100M.csv"]:
     r = rows(n)
@@ -58,7 +58,30 @@ for p in ["3_trained_models/car2_ppo_model.zip",
     n = json.loads(zipfile.ZipFile(p).read("data"))["num_timesteps"]
     print(f"   {os.path.basename(p):32} {n:>13,} steps")
 
-print("5) Behavioral-cloning demonstrations (Thesis 5.4; needs NumPy)")
+print("5) Lap telemetry of the final policy, flying laps 2-10 (Thesis 6.9)")
+for run in ["lap_telemetry_100M", "lap_telemetry_100M_swapped", "lap_telemetry_100M_a_ahead2m"]:
+    rep = json.load(open(f"{EV}{run}.json"))
+    label = ("positions exchanged" if rep["start_positions_swapped"] else
+             f"Car A {rep['car_a_ahead_m']:g} m ahead" if rep.get("car_a_ahead_m") else "authored start")
+    steps = {}
+    for x in csv.DictReader(open(f"{EV}{run}.csv")):
+        if 2 <= int(x["lap"]) <= rep["n_laps"]:
+            steps.setdefault(x["car"], []).append(x)
+    lead = max(steps, key=lambda c: statistics.median(float(x["gap_m"]) for x in steps[c]))
+    for car in sorted(steps, key=lambda c: c != lead):
+        f, s = rep["cars"][car]["flying_laps"], steps[car]
+        full = 100 * sum(float(x["throttle_cmd"]) >= 0.99 for x in s) / len(s)
+        reversals = []
+        for lap in range(2, rep["n_laps"] + 1):
+            signs = [(v > 0) - (v < 0) for v in (float(x["steer_deg"]) for x in s if int(x["lap"]) == lap)]
+            signs = [v for v in signs if v]
+            reversals.append(sum(a != b for a, b in zip(signs, signs[1:])))
+        sm = f["sector_mean_s"]
+        print(f"   {label if car == lead else '':20} {'leader  ' if car == lead else 'follower'} {car}  lap "
+              f"{f['lap_mean_s']:.2f} +/- {f['lap_std_s']:.2f} s  S1 {sm[0]:.2f}  S2 {sm[1]:.2f}  S3 {sm[2]:.2f}  "
+              f"full throttle {full:5.1f}%  steering reversals/lap {statistics.mean(reversals):3.0f}")
+
+print("6) Behavioral-cloning demonstrations (Thesis 5.4; needs NumPy)")
 try:
     import numpy as np
     for f in sorted(glob.glob("5_data/human_driving_data*.npz")):

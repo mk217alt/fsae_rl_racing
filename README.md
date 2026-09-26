@@ -16,14 +16,14 @@ Measured directly, not from training rewards:
 - **Two record training rewards were simulator artifacts.** The curvature-lookahead (121.9) and racing-line (187.6) lineages trained on a stage whose ground was a finite box collider, on which the chassis collapses. A collapsed, stationary car holding full throttle still collects the throttle bonus. On the corrected ground, the racing-line policy is the fastest single-car controller (21.3 s laps, 97% of top speed), while the curvature-lookahead policy leaves the track within 3 s — it never learned to drive.
 - **The behavior-cloning result is a data problem, not a verdict on BC.** All three demonstration datasets were recorded driving the track in the opposite direction, relative to a shifted reference line, with bang-bang keyboard input.
 - **Zero-shot transfer was better than the reward suggested.** On the unseen stadium track, the original-track self-play policy lapped only 8% slower than after adaptation (23.9 s vs. 22.05 s); its reward drop (+141.7 → −155.5) is mostly the centering penalty for a wider line. Three rounds (3M steps) of adaptation closed the gap.
-- **The self-play cars never learned to race.** Across 108 evaluation heats on the stadium track, the lead changed 11 times, 9 of them after an incident of the leader; the car that started on the inside led at the end of 96 heats. An explicit overtaking incentive made the follower follow closer, not pass, and training on to exactly 100 million steps (five more rounds, the best training returns of the project) did not change how the cars race.
-- **A lock-in decides each race, not a stronger car.** The car that is ahead after the first corner stays ahead and the follower gives way: from a mid-straight start, whichever car started a few tenths of a metre further forward led at the end in 75–83% of heats. A mirrored test (every physical start played once by each car) gave the same start the win in 11 of 12 seeds, so there is no difference between Car A and Car B and no spawn-label effect. An earlier "Car B is the stronger car" reading came from an artifact of the test (shared random offsets) and is withdrawn.
+- **The self-play cars never learned to race.** Across 108 evaluation heats on the stadium track, the lead changed 11 times, 9 of them after an incident of the leader; the car that started on the inside led at the end of 96 heats. An explicit overtaking incentive made the follower follow closer, not pass, and training on to exactly 100 million steps (five more rounds, the best training returns of the project) did not change how the cars race. Lap telemetry shows how the follower gives way: the leader drives every lap at full throttle, while the follower lifts before every corner until it is about 3 s behind, and then laps as fast as the leader without attacking.
+- **A lock-in decides each race, not a stronger car.** The car that is ahead after the first corner stays ahead and the follower gives way: from a mid-straight start, whichever car started a few tenths of a meter further forward led at the end in 75–83% of heats. A mirrored test (every physical start played once by each car) gave the same start the win in 11 of 12 seeds, so there is no difference between Car A and Car B and no spawn-label effect. An earlier "Car B is the stronger car" reading came from an artifact of the test (shared random offsets) and is withdrawn.
 - **Training from staggered starts made things worse.** With 75% of training resets placing the trailing car 1.5–8 m behind the leader (3 rounds, 3M steps), passes from behind fell from 8 of 36 heats to 1 of 36, only 4 of 12 race-evaluation heats were free of incidents (12 of 12 before) and 7 vehicles left the track (none before). Nine of the eleven first incidents happened after step 500, beyond the 500-step training episodes, so the training statistics did not show them. The experiment was discarded and the 100M-step policy restored.
 - **Opponent awareness gave no advantage.** Racing the self-play policy against the (opponent-blind) racing-line policy on the corrected stage: a dead heat over both lane assignments, and 0.5% more distance for the racing-line policy in clean heats. An earlier "19% more distance" result had run on the defective ground and is withdrawn.
 
 ## Thesis status
 
-The thesis is fully drafted (as of 2026-09-24, updated with the 100-million-step results): seven chapters, 108 pages including 121 references and an appendix with the reward and training history of every training round. The manuscript itself is not part of this repository; every number it reports comes from the logs, models, and evaluation results of this project.
+The thesis is complete: seven chapters, 114 pages including 121 references and an appendix with the reward and training history of every training round. The manuscript itself is not part of this repository; every number it reports comes from the logs, models, and evaluation results of this project.
 
 | Chapter | Content | Repository |
 |---|---|---|
@@ -32,7 +32,7 @@ The thesis is fully drafted (as of 2026-09-24, updated with the 100-million-step
 | 3 System Design and Methodology | custom vehicle, tracks, and environments; reward terms; PPO setup; parallel architecture; self-play; evaluation protocol | `1_simulation_scenes/`; environment files in `2_python_scripts/` (`b_single_car/`, `e_curvature_lookahead/`, `f_racing_line/`, `g_two_car_racing/`) |
 | 4 Implementation and Development Process | building the assets, the chassis-collapse defect, iterative reward design, evaluation tooling | `2_python_scripts/a_simulation_setup/`, `2_python_scripts/i_verification/` |
 | 5 Single-Vehicle Results | baseline, smoothness term, pure pursuit, behavioral cloning, curvature look-ahead, racing line (RQ1, RQ2) | §2–§6, §8 |
-| 6 Two-Vehicle Self-Play Results | 109 training rounds, zero-shot transfer and adaptation, reward redesign, race evaluation, the 100-million-step milestone, what decides a race (lock-in), staggered-start training, head-to-head (RQ3, RQ4) | §7, §8 |
+| 6 Two-Vehicle Self-Play Results | 109 training rounds, zero-shot transfer and adaptation, reward redesign, race evaluation, the 100-million-step milestone, what decides a race (lock-in), lap telemetry with sector times, staggered-start training, head-to-head (RQ3, RQ4) | §7, §8 |
 | 7 Discussion and Conclusion | answers to the research questions, challenges and limitations, future work | – |
 | Appendix A | reward configuration and end-of-round statistics of every round of every lineage | `6_training_logs/` (full training logs kept locally), `7_journal/rl_journal.html` |
 
@@ -57,6 +57,19 @@ The files are sorted by type. Every script finds its files relative to its own l
 | `6_training_logs/` | training monitors, one line per training episode (`.csv`) |
 | `7_journal/` | `rl_journal.html`, the full development record |
 | `run_output/` | status, log and telemetry files the scripts write while running (not tracked) |
+| `run_test.bat` | repeats the thesis measurements in Isaac Sim: double-click it, or run `.\run_test.bat 3` in PowerShell (see [Requirements](#requirements)) |
+
+| Scene in `1_simulation_scenes/` | Contents | Used for |
+|---|---|---|
+| `simple_car.usd` | the car and the original rounded-square track | single-car baseline, behavioral cloning, pure pursuit (§1–§4) |
+| `vec_train_car2.usd` | many copies of car and track side by side, one car each | parallel single-car training, collapse diagnostic (§5, §6) |
+| `vec_deploy_car2.usd` | one original track with the curvature-aware car | demos of the curvature-lookahead car (§5) |
+| `race_train.usd` | several copies of the original track with a pair of cars each | two-car self-play training (§7) |
+| `race_deploy.usd` | one pair of cars on the original track | demos and race evaluation on the original track (§7, §8) |
+| `unknown_track_train.usd` | several copies of the stadium track with a pair of cars each | adaptation training on the stadium track (§7) |
+| `unknown_track.usd` | one pair of cars on the stadium track | demos, lap benchmark and race evaluation on the stadium track (§7, §8) |
+
+The scenes are binary USD files; open them in Isaac Sim (*File → Open*), not in a text editor.
 
 | Subfolder of `2_python_scripts/` | Part of the project |
 |---|---|
@@ -344,7 +357,7 @@ Key episodes along the way:
 4. **Stadium track:** 40 m / 8 m straights and 6 m corners (vs. 16 m straights and 10 m corners), same width. Zero-shot, the run-49 policy reached the time limit as often as on its own track (93.3%), but its reward fell from +141.7 to −155.5 (see §8 for what that meant physically). Adaptation training continued the same network on an 8-pair stadium stage.
 5. **Reward redesign:** a lap-time benchmark revealed a slowdown by round 12 (22.1 s → 25.7 s flying laps in the benchmark) and demos showed one car following the other; throttle bonus and an overtaking incentive were added, then a smoothness term after the driving looked jerky, then a larger overtaking incentive.
 6. **Spawn-position bias:** the stadium deploy stage spawns both cars at fixed positions; the car in position B (the inside of the first corner) led at every lap line in 6 of 8 benchmarks. `run_unknown_track_demo.py` and `lap_time_benchmark.py` now swap the starting positions at random (the demo swaps the authored USD translates before `World.reset()`; a runtime teleport before `world.play()` froze the rendered demo after 90 control actions). The swap alone did not remove the effect, because the cause is not the spawn spot — see 7.
-7. **Lock-in, not a stronger car (2026-09-24):** with the final checkpoint car B led at all ten lap lines from both spawn spots. Comparing every authored attribute of the two cars found no physical difference; a per-step trace shows a mirror-image start, with the outcome decided in the first corner (20–37 m in), where the early leader either runs wide and yields (~2 m/s) or keeps its line. Whichever car starts even a few tenths of a metre further forward leads at the end in 75–83% of 24-heat tests; the follower then stays ~13 m behind. A mirrored design (every physical start played by both cars) gave the same start the win in 11 of 12 seeds; the benchmark's fixed start is a near tie decided by numerical noise. An earlier reading of the first test (car B led 18 of 24) was an artifact of shared random offsets and is withdrawn.
+7. **Lock-in, not a stronger car (2026-09-24):** with the final checkpoint car B led at all ten lap lines from both spawn spots. Comparing every authored attribute of the two cars found no physical difference; a per-step trace shows a mirror-image start, with the outcome decided in the first corner (20–37 m in), where the early leader either runs wide and yields (~2 m/s) or keeps its line. Whichever car starts even a few tenths of a meter further forward leads at the end in 75–83% of 24-heat tests; the follower then stays ~13 m behind. A mirrored design (every physical start played by both cars) gave the same start the win in 11 of 12 seeds; the benchmark's fixed start is a near tie decided by numerical noise. An earlier reading of the first test (car B led 18 of 24) was an artifact of shared random offsets and is withdrawn.
 8. **Staggered-start training (discarded):** `train_unknown_track.py` accepts a third argument `stagger_prob` (for the run above `0.75`), which makes `car_unknown_track_env.py` start the trailing car 1.5–8 m behind the leader on a random side. Three rounds (3M steps) with the reward unchanged kept the training statistics healthy (95–100% full-length) but degraded the driving: overtaking from behind 8/36 → 1/36 heats, clean race-evaluation heats 12/12 → 4/12, 7 vehicles off the track (0 before), flying laps 22.78 → 24.04 s (mean over all heats). Nine of eleven first incidents came after step 500, beyond the 500-step training episodes — evaluation must use the full 2,000-step horizon. The checkpoint was rolled back to the 100M policy (`3_trained_models/checkpoints/`).
 
 ### Output
@@ -361,7 +374,7 @@ Direct physical measurements of every lineage, written to check headline results
 
 Implemented in:
 
-`2_python_scripts/h_evaluation/common_metric_eval.py`, `collapse_reward_diagnostic.py`, `head_to_head_eval.py`, `two_car_race_eval.py`, `start_condition_eval.py`, `start_trace.py`, `stagger_eval.py` (earlier, superseded: `race_mixed_policy_eval.py`, `run_mixed_race_demo.py`)
+`2_python_scripts/h_evaluation/common_metric_eval.py`, `collapse_reward_diagnostic.py`, `head_to_head_eval.py`, `two_car_race_eval.py`, `start_condition_eval.py`, `start_trace.py`, `stagger_eval.py`, `lap_telemetry.py`, `plot_lap_telemetry.py` (earlier, superseded: `race_mixed_policy_eval.py`, `run_mixed_race_demo.py`)
 
 ### Workflow
 ```
@@ -385,6 +398,13 @@ start_trace.py              per-control-step trace of both cars from the fixed b
                             forced on/off) plus a comparison of the authored attributes of the two cars
 stagger_eval.py             passing test: the trailing car starts 2/4/6 m behind the leader, both cars and
                             both sides in the trailing role, 500 steps; does it lead at the end?
+lap_telemetry.py            Formula 1-style telemetry of the final policy: 10 laps from the fixed stadium
+                            start (optionally swapped, or Car A placed ahead), every control step logs
+                            speed, throttle, longitudinal acceleration, steering command and measured
+                            wheel angle; lap and sector times (3 equal sectors, timing line at the grid)
+plot_lap_telemetry.py       graphs of the telemetry: track map with sectors and a timing strip, sector times
+                            lap by lap, traces along the lap, acceleration and steering lap by lap (runs
+                            with Isaac Sim's Python)
 ```
 
 ### Output
@@ -433,9 +453,24 @@ stagger_eval.py             passing test: the trailing car starts 2/4/6 m behind
 | Lead changes (all after an incident of the leader) | 0 | 7 |
 | Ten-lap benchmark, mean flying lap [s] | 22.8 | 25.7 |
 
+**Lap telemetry of the final policy** (`lap_telemetry.py`, stadium track, 10 laps, three runs: authored start, positions exchanged, Car A 2 m ahead; graphs `4_results/lap_telemetry_100M*_{track,sectors,traces,laps}.png`: track map with a timing strip, sector times lap by lap, traces along the lap, acceleration and steering lap by lap). Flying laps 2–10, ranges over the three runs:
+
+| Measure | Leader | Follower |
+|---|---|---|
+| Flying lap [s] | 22.70 | 22.80–22.92 |
+| Sector 1 / 2 / 3 [s] (44.6 m each) | 7.56–7.62 / 7.50–7.52 / 7.58–7.63 | 7.61–7.72 / 7.52–7.53 / 7.66–7.75 |
+| Control steps at full throttle | 99.97–100% | 94.1–95.7% |
+| Strongest deceleration [m/s²] | 1.10–1.24 | 2.72–3.36 |
+| Lowest speed [m/s] | 5.78–5.81 | 5.11–5.38 |
+| Mean absolute steering angle [°] | 10.1–10.3 | 10.5–10.6 |
+| Steering reversals per lap (mean) | 165–170 | 62–69 |
+| Mean distance from the centerline [m] | 0.41–0.47 | 0.17 |
+
+The order is settled in sector 1 of the first lap; the interval then grows to 3.0–3.4 s within one to three laps and stays there. The back straight (sector 2) is identical for both roles (speed limit); the follower loses its time in the corner sectors. The leader never lifts and steers with rapid small corrections; the follower lifts before every corner and steers more calmly. With Car A placed ahead, the signatures swap with the roles — they belong to the role, not to the car.
+
 ### Notes
 - **Training rewards measured the wrong thing in several places**: collapsed cars holding throttle (§5, §6), a slowdown hidden by a saturated full-length rate (phase E), and a zero-shot reward drop caused mainly by the centering penalty (run 49 drives the stadium track 0.89 m off the centerline, on its own track 0.07 m; with a weight of 0.9 that difference alone is worth ~350 reward per episode).
-- **Why the self-play cars do not race:** both cars are identical, driven by the same deterministic network, and reach the same top speed on every straight, so a follower can only gain through a shorter line the leader already occupies, or a mistake of the leader. At the final weight, gaining one car length is worth 0.5 × 2 = 1.0 — less than one step of the proximity penalty (1.5) — and over an episode the overtaking term telescopes to at most 0.5 × 30 = 15, against 150 for leaving the track; giving way costs nothing. The start-condition tests show the result: an initial lead of a few tenths of a metre decides ~80% of heats (lock-in), independent of the car or the spawn spot. Changing only the start distribution (staggered training starts) did not fix this and degraded the driving. Untried: training and evaluation on longer episodes (the failures appeared after step 500 of the 2,000-step evaluation heats), a milder stagger, a reward paid for a completed pass, a lower collision penalty or trigger distance, opponents of different strength (e.g. earlier checkpoints), and asymmetric-role self-play.
+- **Why the self-play cars do not race:** both cars are identical, driven by the same deterministic network, and reach the same top speed on every straight, so a follower can only gain through a shorter line the leader already occupies, or a mistake of the leader. At the final weight, gaining one car length is worth 0.5 × 2 = 1.0 — less than one step of the proximity penalty (1.5) — and over an episode the overtaking term telescopes to at most 0.5 × 30 = 15, against 150 for leaving the track; giving way costs nothing. The start-condition tests show the result: an initial lead of a few tenths of a meter decides ~80% of heats (lock-in), independent of the car or the spawn spot. Changing only the start distribution (staggered training starts) did not fix this and degraded the driving. Untried: training and evaluation on longer episodes (the failures appeared after step 500 of the 2,000-step evaluation heats), a milder stagger, a reward paid for a completed pass, a lower collision penalty or trigger distance, opponents of different strength (e.g. earlier checkpoints), and asymmetric-role self-play.
 - **Training statistics do not see failures beyond the training horizon:** the staggered-start policy had 95–100% full-length 500-step training episodes, yet 9 of 11 first incidents in 2,000-step evaluation heats occurred after step 500 (median step 1,509).
 - The first head-to-head (`race_mixed_policy_eval.py`, "racing-line covers 19% more distance") ran on the box-ground stage against an early ~5M-step checkpoint and was dominated by collapse recoveries; it is withdrawn.
 - Evaluation code needed the same scrutiny as training code: the curvature-lookahead policy was first evaluated in the wrong direction, the demo's recovery counters mix per-car and per-step counts (the "45% of decisions" recovery rate is 22.6% per car decision), the fixed start of the lap benchmark is a near tie decided by numerical noise (the same car won from both spawn spots), and a first test of start offsets suggested a Car B label effect that came from offsets shared between configurations — only a mirrored design (each physical start played by both cars) removed it.
@@ -477,12 +512,19 @@ python.bat 2_python_scripts/h_evaluation/two_car_race_eval.py stadium 12 2000 10
 
 Every script finds the scenes, models and results relative to its own location, so the project folder can be placed anywhere and the scripts can be started from any working directory.
 
-## Checking the results without the simulator
-
-`2_python_scripts/check_results.py` (standard-library Python; NumPy only for its last part) recomputes the thesis numbers from the committed result files: the race-evaluation lap statistics over incident-free heats, the totals over the 108 stadium heats, the lock-in, mirrored and passing tests, the training steps stored in each model file, and the direction of travel in the behavioral-cloning datasets.
+`run_test.bat` in the project folder repeats the measurements reported in the thesis without typing any paths. It finds Isaac Sim by itself (`ISAACSIM_PATH`, `C:\isaacsim`, next to the project folder, the Desktop or Downloads; otherwise it asks once and remembers the answer in `isaacsim_path.txt`), installs Stable-Baselines3 2.9.0 and Gymnasium 1.2.1 into Isaac Sim on first use, and prints the exact command before running it:
 
 ```
-python 2_python_scripts/check_results.py
+.\run_test.bat        # PowerShell: shows the list of tests (the same happens on a double-click)
+.\run_test.bat 3      # runs test 3: the 100M-step policy on the stadium track
+```
+
+## Checking the results without the simulator
+
+`2_python_scripts/check_results.py` (standard-library Python, so it runs on Windows, macOS and Linux; NumPy only for its last part) recomputes the thesis numbers from the committed result files: the race-evaluation lap statistics over incident-free heats, the totals over the 108 stadium heats, the lock-in, mirrored and passing tests, the training steps stored in each model file, the lap and sector times and the throttle and steering of leader and follower in the lap telemetry, and the direction of travel in the behavioral-cloning datasets.
+
+```
+python 2_python_scripts/check_results.py      # macOS / Linux: python3
 ```
 
 ## Checkpoints

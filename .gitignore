@@ -26,6 +26,9 @@ record_driving_progress.txt
 run_output/*
 !run_output/README.txt
 
+# Isaac Sim folder remembered by run_test.bat (differs per PC)
+isaacsim_path.txt
+
 # Superseded iteration checkpoints from the BC fine-tuning experiment
 # (kept: the unsuffixed final ones - car2_bc_finetuned.zip etc.)
 car2_bc_finetuned_v*.zip
@@ -34,6 +37,10 @@ car2_bc_warmed_v*.zip
 
 # Editor / tooling
 .claude/
+
+# macOS Finder metadata
+.DS_Store
+._*
 
 # Stray files not part of this project
 2.7.0+cu128

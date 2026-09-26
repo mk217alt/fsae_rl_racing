@@ -1,5 +1,5 @@
 {
- "stage": "C:/Users/sanja/Desktop/thesis/Racing/Two_Car_Self_Play_Racing/unknown_track.usd",
+ "stage": "1_simulation_scenes/unknown_track.usd",
  "ground_prim_types": [
   "Mesh",
   "Plane",

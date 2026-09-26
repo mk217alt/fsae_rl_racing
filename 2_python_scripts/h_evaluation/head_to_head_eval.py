@@ -248,7 +248,7 @@ def run_heat(swap, steps, recovery, snapshot_every=250):
 
 
 world.play()
-header = {"stage": STAGE, "ground_prim_types": ground_types, "selfplay_checkpoint": SELFPLAY_LABEL,
+header = {"stage": _os.path.relpath(STAGE, ROOT).replace("\\", "/"), "ground_prim_types": ground_types, "selfplay_checkpoint": SELFPLAY_LABEL,
           "track_length_m": round(L, 2)}
 if MODE == "fixed":
     result = {**header, **run_heat(LANES == "swap", FIXED_CONTROL_STEPS, RECOVERY)}
