@@ -1,0 +1,1298 @@
+{
+ "policy": "3_trained_models/car_race_ppo_model.zip",
+ "num_timesteps": 100000000,
+ "track": "1_simulation_scenes/unknown_track.usd",
+ "track_length_m": 133.66,
+ "sector_length_m": 44.553,
+ "n_laps": 10,
+ "start_positions_swapped": false,
+ "control_dt_s": 0.066667,
+ "deterministic": true,
+ "car_a_ahead_m": 2.0,
+ "timing": "timing line = the grid; three equal sectors along the centerline; lap and sector times interpolated between control steps; flying laps = laps 2..n",
+ "grid": {
+  "Car A": "outside of the first corner, 2 m ahead",
+  "Car B": "inside of the first corner"
+ },
+ "centerline_xy": [
+  [
+   -20.0,
+   20.0
+  ],
+  [
+   -20.939,
+   19.926
+  ],
+  [
+   -21.854,
+   19.706
+  ],
+  [
+   -22.724,
+   19.346
+  ],
+  [
+   -23.527,
+   18.854
+  ],
+  [
+   -24.243,
+   18.243
+  ],
+  [
+   -24.854,
+   17.527
+  ],
+  [
+   -25.346,
+   16.724
+  ],
+  [
+   -25.706,
+   15.854
+  ],
+  [
+   -25.926,
+   14.939
+  ],
+  [
+   -26.0,
+   14.0
+  ],
+  [
+   -26.0,
+   6.0
+  ],
+  [
+   -25.926,
+   5.061
+  ],
+  [
+   -25.706,
+   4.146
+  ],
+  [
+   -25.346,
+   3.276
+  ],
+  [
+   -24.854,
+   2.473
+  ],
+  [
+   -24.243,
+   1.757
+  ],
+  [
+   -23.527,
+   1.146
+  ],
+  [
+   -22.724,
+   0.654
+  ],
+  [
+   -21.854,
+   0.294
+  ],
+  [
+   -20.939,
+   0.074
+  ],
+  [
+   -20.0,
+   0.0
+  ],
+  [
+   20.0,
+   0.0
+  ],
+  [
+   20.939,
+   0.074
+  ],
+  [
+   21.854,
+   0.294
+  ],
+  [
+   22.724,
+   0.654
+  ],
+  [
+   23.527,
+   1.146
+  ],
+  [
+   24.243,
+   1.757
+  ],
+  [
+   24.854,
+   2.473
+  ],
+  [
+   25.346,
+   3.276
+  ],
+  [
+   25.706,
+   4.146
+  ],
+  [
+   25.926,
+   5.061
+  ],
+  [
+   26.0,
+   6.0
+  ],
+  [
+   26.0,
+   14.0
+  ],
+  [
+   25.926,
+   14.939
+  ],
+  [
+   25.706,
+   15.854
+  ],
+  [
+   25.346,
+   16.724
+  ],
+  [
+   24.854,
+   17.527
+  ],
+  [
+   24.243,
+   18.243
+  ],
+  [
+   23.527,
+   18.854
+  ],
+  [
+   22.724,
+   19.346
+  ],
+  [
+   21.854,
+   19.706
+  ],
+  [
+   20.939,
+   19.926
+  ],
+  [
+   20.0,
+   20.0
+  ]
+ ],
+ "centerline_cumulative_m": [
+  0.0,
+  0.942,
+  1.883,
+  2.825,
+  3.766,
+  4.708,
+  5.649,
+  6.591,
+  7.532,
+  8.474,
+  9.415,
+  17.415,
+  18.357,
+  19.298,
+  20.24,
+  21.181,
+  22.123,
+  23.064,
+  24.006,
+  24.947,
+  25.889,
+  26.83,
+  66.83,
+  67.772,
+  68.713,
+  69.655,
+  70.596,
+  71.538,
+  72.479,
+  73.421,
+  74.362,
+  75.304,
+  76.245,
+  84.245,
+  85.187,
+  86.128,
+  87.07,
+  88.011,
+  88.953,
+  89.894,
+  90.836,
+  91.777,
+  92.719,
+  93.66,
+  133.66
+ ],
+ "cars": {
+  "Car A": {
+   "laps": [
+    {
+     "lap": 1,
+     "time_s": 23.79,
+     "sectors_s": [
+      8.988,
+      7.404,
+      7.398
+     ],
+     "mean_speed_mps": 5.43,
+     "max_speed_mps": 6.046,
+     "full_throttle_share": 0.997,
+     "mean_abs_steer_deg": 11.769,
+     "mean_abs_steer_change": 0.0999,
+     "mean_abs_throttle_change": 0.0004,
+     "gap_at_line_m": 13.485,
+     "sector_detail": [
+      {
+       "time_s": 8.988,
+       "mean_speed_mps": 4.572,
+       "min_speed_mps": 0.001,
+       "full_throttle_share": 0.993,
+       "mean_abs_steer_deg": 15.777,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 2.147,
+       "min_accel_mps2": -0.838
+      },
+      {
+       "time_s": 7.404,
+       "mean_speed_mps": 5.978,
+       "min_speed_mps": 5.817,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 4.865,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.714,
+       "min_accel_mps2": -0.543
+      },
+      {
+       "time_s": 7.398,
+       "mean_speed_mps": 5.926,
+       "min_speed_mps": 5.838,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 13.798,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.939,
+       "min_accel_mps2": -0.325
+      }
+     ]
+    },
+    {
+     "lap": 2,
+     "time_s": 22.353,
+     "sectors_s": [
+      7.378,
+      7.457,
+      7.518
+     ],
+     "mean_speed_mps": 5.951,
+     "max_speed_mps": 6.096,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 10.413,
+     "mean_abs_steer_change": 0.1127,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 18.636,
+     "sector_detail": [
+      {
+       "time_s": 7.378,
+       "mean_speed_mps": 5.937,
+       "min_speed_mps": 5.839,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.778,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.653,
+       "min_accel_mps2": -0.294
+      },
+      {
+       "time_s": 7.457,
+       "mean_speed_mps": 5.96,
+       "min_speed_mps": 5.827,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 5.707,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.594,
+       "min_accel_mps2": -0.248
+      },
+      {
+       "time_s": 7.518,
+       "mean_speed_mps": 5.955,
+       "min_speed_mps": 5.841,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.755,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.241,
+       "min_accel_mps2": -0.873
+      }
+     ]
+    },
+    {
+     "lap": 3,
+     "time_s": 22.753,
+     "sectors_s": [
+      7.531,
+      7.532,
+      7.69
+     ],
+     "mean_speed_mps": 5.953,
+     "max_speed_mps": 6.064,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 10.179,
+     "mean_abs_steer_change": 0.1842,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 18.754,
+     "sector_detail": [
+      {
+       "time_s": 7.531,
+       "mean_speed_mps": 5.942,
+       "min_speed_mps": 5.831,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.632,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.953,
+       "min_accel_mps2": -0.882
+      },
+      {
+       "time_s": 7.532,
+       "mean_speed_mps": 5.972,
+       "min_speed_mps": 5.869,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 6.171,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.776,
+       "min_accel_mps2": -0.979
+      },
+      {
+       "time_s": 7.69,
+       "mean_speed_mps": 5.945,
+       "min_speed_mps": 5.838,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 11.706,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.821,
+       "min_accel_mps2": -0.595
+      }
+     ]
+    },
+    {
+     "lap": 4,
+     "time_s": 22.749,
+     "sectors_s": [
+      7.759,
+      7.462,
+      7.528
+     ],
+     "mean_speed_mps": 5.953,
+     "max_speed_mps": 6.078,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 9.988,
+     "mean_abs_steer_change": 0.1346,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 17.901,
+     "sector_detail": [
+      {
+       "time_s": 7.759,
+       "mean_speed_mps": 5.958,
+       "min_speed_mps": 5.832,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.209,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.813,
+       "min_accel_mps2": -0.257
+      },
+      {
+       "time_s": 7.462,
+       "mean_speed_mps": 5.972,
+       "min_speed_mps": 5.892,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 5.388,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.96,
+       "min_accel_mps2": -0.98
+      },
+      {
+       "time_s": 7.528,
+       "mean_speed_mps": 5.93,
+       "min_speed_mps": 5.821,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.266,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.919,
+       "min_accel_mps2": -1.237
+      }
+     ]
+    },
+    {
+     "lap": 5,
+     "time_s": 22.674,
+     "sectors_s": [
+      7.399,
+      7.522,
+      7.753
+     ],
+     "mean_speed_mps": 5.956,
+     "max_speed_mps": 6.021,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 10.289,
+     "mean_abs_steer_change": 0.1906,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 19.183,
+     "sector_detail": [
+      {
+       "time_s": 7.399,
+       "mean_speed_mps": 5.936,
+       "min_speed_mps": 5.841,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.208,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.638,
+       "min_accel_mps2": -0.8
+      },
+      {
+       "time_s": 7.522,
+       "mean_speed_mps": 5.975,
+       "min_speed_mps": 5.839,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 6.67,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.73,
+       "min_accel_mps2": -0.417
+      },
+      {
+       "time_s": 7.753,
+       "mean_speed_mps": 5.955,
+       "min_speed_mps": 5.851,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 11.979,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.989,
+       "min_accel_mps2": -0.307
+      }
+     ]
+    },
+    {
+     "lap": 6,
+     "time_s": 22.702,
+     "sectors_s": [
+      7.642,
+      7.49,
+      7.57
+     ],
+     "mean_speed_mps": 5.965,
+     "max_speed_mps": 6.06,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 9.82,
+     "mean_abs_steer_change": 0.1646,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 19.624,
+     "sector_detail": [
+      {
+       "time_s": 7.642,
+       "mean_speed_mps": 5.958,
+       "min_speed_mps": 5.87,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.054,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.737,
+       "min_accel_mps2": -0.477
+      },
+      {
+       "time_s": 7.49,
+       "mean_speed_mps": 5.98,
+       "min_speed_mps": 5.883,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 5.52,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.87,
+       "min_accel_mps2": -0.393
+      },
+      {
+       "time_s": 7.57,
+       "mean_speed_mps": 5.957,
+       "min_speed_mps": 5.845,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 11.79,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.883,
+       "min_accel_mps2": -0.409
+      }
+     ]
+    },
+    {
+     "lap": 7,
+     "time_s": 22.846,
+     "sectors_s": [
+      7.801,
+      7.519,
+      7.526
+     ],
+     "mean_speed_mps": 5.954,
+     "max_speed_mps": 6.074,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 10.598,
+     "mean_abs_steer_change": 0.1984,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 19.335,
+     "sector_detail": [
+      {
+       "time_s": 7.801,
+       "mean_speed_mps": 5.952,
+       "min_speed_mps": 5.818,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 13.328,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.83,
+       "min_accel_mps2": -0.307
+      },
+      {
+       "time_s": 7.519,
+       "mean_speed_mps": 5.973,
+       "min_speed_mps": 5.859,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 6.109,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.793,
+       "min_accel_mps2": -0.892
+      },
+      {
+       "time_s": 7.526,
+       "mean_speed_mps": 5.937,
+       "min_speed_mps": 5.808,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.259,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.056,
+       "min_accel_mps2": -0.414
+      }
+     ]
+    },
+    {
+     "lap": 8,
+     "time_s": 22.715,
+     "sectors_s": [
+      7.75,
+      7.501,
+      7.464
+     ],
+     "mean_speed_mps": 5.959,
+     "max_speed_mps": 6.085,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 9.895,
+     "mean_abs_steer_change": 0.1739,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 19.147,
+     "sector_detail": [
+      {
+       "time_s": 7.75,
+       "mean_speed_mps": 5.949,
+       "min_speed_mps": 5.856,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.362,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.797,
+       "min_accel_mps2": -0.449
+      },
+      {
+       "time_s": 7.501,
+       "mean_speed_mps": 5.975,
+       "min_speed_mps": 5.845,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 5.555,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.953,
+       "min_accel_mps2": -1.033
+      },
+      {
+       "time_s": 7.464,
+       "mean_speed_mps": 5.952,
+       "min_speed_mps": 5.836,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 11.68,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.801,
+       "min_accel_mps2": -0.875
+      }
+     ]
+    },
+    {
+     "lap": 9,
+     "time_s": 22.791,
+     "sectors_s": [
+      7.647,
+      7.512,
+      7.631
+     ],
+     "mean_speed_mps": 5.97,
+     "max_speed_mps": 6.075,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 9.703,
+     "mean_abs_steer_change": 0.1708,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 18.969,
+     "sector_detail": [
+      {
+       "time_s": 7.647,
+       "mean_speed_mps": 5.962,
+       "min_speed_mps": 5.865,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.201,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.952,
+       "min_accel_mps2": -0.469
+      },
+      {
+       "time_s": 7.512,
+       "mean_speed_mps": 5.988,
+       "min_speed_mps": 5.876,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 5.583,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.761,
+       "min_accel_mps2": -0.641
+      },
+      {
+       "time_s": 7.631,
+       "mean_speed_mps": 5.959,
+       "min_speed_mps": 5.886,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 11.268,
+       "max_abs_steer_deg": 24.999,
+       "max_accel_mps2": 0.968,
+       "min_accel_mps2": -1.224
+      }
+     ]
+    },
+    {
+     "lap": 10,
+     "time_s": 22.747,
+     "sectors_s": [
+      7.675,
+      7.501,
+      7.57
+     ],
+     "mean_speed_mps": 5.961,
+     "max_speed_mps": 6.094,
+     "full_throttle_share": 1.0,
+     "mean_abs_steer_deg": 10.174,
+     "mean_abs_steer_change": 0.1591,
+     "mean_abs_throttle_change": 0.0,
+     "gap_at_line_m": 18.311,
+     "sector_detail": [
+      {
+       "time_s": 7.675,
+       "mean_speed_mps": 5.965,
+       "min_speed_mps": 5.839,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.233,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.777,
+       "min_accel_mps2": -0.428
+      },
+      {
+       "time_s": 7.501,
+       "mean_speed_mps": 5.978,
+       "min_speed_mps": 5.88,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 6.099,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.963,
+       "min_accel_mps2": -0.272
+      },
+      {
+       "time_s": 7.57,
+       "mean_speed_mps": 5.942,
+       "min_speed_mps": 5.816,
+       "full_throttle_share": 1.0,
+       "mean_abs_steer_deg": 12.153,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.822,
+       "min_accel_mps2": -0.784
+      }
+     ]
+    }
+   ],
+   "flying_laps": {
+    "n": 9,
+    "lap_mean_s": 22.703,
+    "lap_std_s": 0.133,
+    "best_lap_s": 22.353,
+    "sector_mean_s": [
+     7.62,
+     7.5,
+     7.583
+    ],
+    "sector_std_s": [
+     0.145,
+     0.025,
+     0.087
+    ],
+    "best_sectors_s": [
+     7.378,
+     7.457,
+     7.464
+    ],
+    "theoretical_best_s": 22.299,
+    "sector_mean_speed_mps": [
+     5.951,
+     5.975,
+     5.948
+    ],
+    "sector_full_throttle_share": [
+     1.0,
+     1.0,
+     1.0
+    ],
+    "sector_mean_abs_steer_deg": [
+     12.445,
+     5.867,
+     11.984
+    ],
+    "mean_speed_mps": 5.958,
+    "max_speed_mps": 6.096,
+    "full_throttle_share": 1.0,
+    "mean_abs_steer_change": 0.165,
+    "mean_abs_throttle_change": 0.0
+   }
+  },
+  "Car B": {
+   "laps": [
+    {
+     "lap": 1,
+     "time_s": 26.038,
+     "sectors_s": [
+      10.666,
+      7.577,
+      7.796
+     ],
+     "mean_speed_mps": 5.1,
+     "max_speed_mps": 6.019,
+     "full_throttle_share": 0.885,
+     "mean_abs_steer_deg": 11.102,
+     "mean_abs_steer_change": 0.1056,
+     "mean_abs_throttle_change": 0.0185,
+     "gap_at_line_m": -13.462,
+     "sector_detail": [
+      {
+       "time_s": 10.666,
+       "mean_speed_mps": 4.151,
+       "min_speed_mps": 0.001,
+       "full_throttle_share": 0.819,
+       "mean_abs_steer_deg": 15.65,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 2.238,
+       "min_accel_mps2": -4.345
+      },
+      {
+       "time_s": 7.577,
+       "mean_speed_mps": 5.854,
+       "min_speed_mps": 5.34,
+       "full_throttle_share": 0.904,
+       "mean_abs_steer_deg": 3.833,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.938,
+       "min_accel_mps2": -2.713
+      },
+      {
+       "time_s": 7.796,
+       "mean_speed_mps": 5.664,
+       "min_speed_mps": 5.376,
+       "full_throttle_share": 0.957,
+       "mean_abs_steer_deg": 11.964,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 2.069,
+       "min_accel_mps2": -2.772
+      }
+     ]
+    },
+    {
+     "lap": 2,
+     "time_s": 23.242,
+     "sectors_s": [
+      7.923,
+      7.58,
+      7.739
+     ],
+     "mean_speed_mps": 5.789,
+     "max_speed_mps": 6.021,
+     "full_throttle_share": 0.946,
+     "mean_abs_steer_deg": 10.368,
+     "mean_abs_steer_change": 0.0772,
+     "mean_abs_throttle_change": 0.0121,
+     "gap_at_line_m": -18.732,
+     "sector_detail": [
+      {
+       "time_s": 7.923,
+       "mean_speed_mps": 5.654,
+       "min_speed_mps": 5.221,
+       "full_throttle_share": 0.916,
+       "mean_abs_steer_deg": 12.288,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.496,
+       "min_accel_mps2": -2.72
+      },
+      {
+       "time_s": 7.58,
+       "mean_speed_mps": 5.897,
+       "min_speed_mps": 5.586,
+       "full_throttle_share": 0.947,
+       "mean_abs_steer_deg": 5.448,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.676,
+       "min_accel_mps2": -2.246
+      },
+      {
+       "time_s": 7.739,
+       "mean_speed_mps": 5.822,
+       "min_speed_mps": 5.612,
+       "full_throttle_share": 0.974,
+       "mean_abs_steer_deg": 13.231,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.672,
+       "min_accel_mps2": -2.174
+      }
+     ]
+    },
+    {
+     "lap": 3,
+     "time_s": 22.829,
+     "sectors_s": [
+      7.63,
+      7.487,
+      7.712
+     ],
+     "mean_speed_mps": 5.82,
+     "max_speed_mps": 6.021,
+     "full_throttle_share": 0.924,
+     "mean_abs_steer_deg": 10.796,
+     "mean_abs_steer_change": 0.1131,
+     "mean_abs_throttle_change": 0.0142,
+     "gap_at_line_m": -19.186,
+     "sector_detail": [
+      {
+       "time_s": 7.63,
+       "mean_speed_mps": 5.797,
+       "min_speed_mps": 5.535,
+       "full_throttle_share": 0.956,
+       "mean_abs_steer_deg": 12.781,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.451,
+       "min_accel_mps2": -2.373
+      },
+      {
+       "time_s": 7.487,
+       "mean_speed_mps": 5.956,
+       "min_speed_mps": 5.772,
+       "full_throttle_share": 0.991,
+       "mean_abs_steer_deg": 6.225,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.839,
+       "min_accel_mps2": -3.191
+      },
+      {
+       "time_s": 7.712,
+       "mean_speed_mps": 5.711,
+       "min_speed_mps": 5.332,
+       "full_throttle_share": 0.828,
+       "mean_abs_steer_deg": 13.26,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.608,
+       "min_accel_mps2": -3.357
+      }
+     ]
+    },
+    {
+     "lap": 4,
+     "time_s": 22.536,
+     "sectors_s": [
+      7.523,
+      7.482,
+      7.53
+     ],
+     "mean_speed_mps": 5.849,
+     "max_speed_mps": 6.024,
+     "full_throttle_share": 0.959,
+     "mean_abs_steer_deg": 10.266,
+     "mean_abs_steer_change": 0.0847,
+     "mean_abs_throttle_change": 0.0088,
+     "gap_at_line_m": -17.917,
+     "sector_detail": [
+      {
+       "time_s": 7.523,
+       "mean_speed_mps": 5.836,
+       "min_speed_mps": 5.653,
+       "full_throttle_share": 0.947,
+       "mean_abs_steer_deg": 13.011,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.977,
+       "min_accel_mps2": -2.199
+      },
+      {
+       "time_s": 7.482,
+       "mean_speed_mps": 5.931,
+       "min_speed_mps": 5.654,
+       "full_throttle_share": 0.955,
+       "mean_abs_steer_deg": 4.416,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.501,
+       "min_accel_mps2": -2.018
+      },
+      {
+       "time_s": 7.53,
+       "mean_speed_mps": 5.78,
+       "min_speed_mps": 5.573,
+       "full_throttle_share": 0.973,
+       "mean_abs_steer_deg": 13.319,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.45,
+       "min_accel_mps2": -1.743
+      }
+     ]
+    },
+    {
+     "lap": 5,
+     "time_s": 22.913,
+     "sectors_s": [
+      7.726,
+      7.545,
+      7.642
+     ],
+     "mean_speed_mps": 5.869,
+     "max_speed_mps": 6.093,
+     "full_throttle_share": 0.951,
+     "mean_abs_steer_deg": 11.222,
+     "mean_abs_steer_change": 0.1108,
+     "mean_abs_throttle_change": 0.0072,
+     "gap_at_line_m": -19.406,
+     "sector_detail": [
+      {
+       "time_s": 7.726,
+       "mean_speed_mps": 5.803,
+       "min_speed_mps": 5.501,
+       "full_throttle_share": 0.931,
+       "mean_abs_steer_deg": 12.323,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.926,
+       "min_accel_mps2": -2.15
+      },
+      {
+       "time_s": 7.545,
+       "mean_speed_mps": 5.948,
+       "min_speed_mps": 5.764,
+       "full_throttle_share": 0.938,
+       "mean_abs_steer_deg": 6.867,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.367,
+       "min_accel_mps2": -1.614
+      },
+      {
+       "time_s": 7.642,
+       "mean_speed_mps": 5.859,
+       "min_speed_mps": 5.746,
+       "full_throttle_share": 0.983,
+       "mean_abs_steer_deg": 14.389,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.992,
+       "min_accel_mps2": -0.579
+      }
+     ]
+    },
+    {
+     "lap": 6,
+     "time_s": 22.778,
+     "sectors_s": [
+      7.519,
+      7.528,
+      7.731
+     ],
+     "mean_speed_mps": 5.849,
+     "max_speed_mps": 6.015,
+     "full_throttle_share": 0.909,
+     "mean_abs_steer_deg": 10.71,
+     "mean_abs_steer_change": 0.0968,
+     "mean_abs_throttle_change": 0.0094,
+     "gap_at_line_m": -19.789,
+     "sector_detail": [
+      {
+       "time_s": 7.519,
+       "mean_speed_mps": 5.873,
+       "min_speed_mps": 5.617,
+       "full_throttle_share": 0.956,
+       "mean_abs_steer_deg": 12.944,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.351,
+       "min_accel_mps2": -2.412
+      },
+      {
+       "time_s": 7.528,
+       "mean_speed_mps": 5.888,
+       "min_speed_mps": 5.621,
+       "full_throttle_share": 0.85,
+       "mean_abs_steer_deg": 5.248,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.282,
+       "min_accel_mps2": -1.921
+      },
+      {
+       "time_s": 7.731,
+       "mean_speed_mps": 5.787,
+       "min_speed_mps": 5.627,
+       "full_throttle_share": 0.922,
+       "mean_abs_steer_deg": 13.854,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.758,
+       "min_accel_mps2": -2.488
+      }
+     ]
+    },
+    {
+     "lap": 7,
+     "time_s": 22.777,
+     "sectors_s": [
+      7.525,
+      7.572,
+      7.679
+     ],
+     "mean_speed_mps": 5.853,
+     "max_speed_mps": 6.021,
+     "full_throttle_share": 0.956,
+     "mean_abs_steer_deg": 10.909,
+     "mean_abs_steer_change": 0.1054,
+     "mean_abs_throttle_change": 0.0066,
+     "gap_at_line_m": -19.371,
+     "sector_detail": [
+      {
+       "time_s": 7.525,
+       "mean_speed_mps": 5.868,
+       "min_speed_mps": 5.648,
+       "full_throttle_share": 0.938,
+       "mean_abs_steer_deg": 12.928,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.596,
+       "min_accel_mps2": -2.256
+      },
+      {
+       "time_s": 7.572,
+       "mean_speed_mps": 5.892,
+       "min_speed_mps": 5.465,
+       "full_throttle_share": 0.956,
+       "mean_abs_steer_deg": 5.6,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.742,
+       "min_accel_mps2": -2.674
+      },
+      {
+       "time_s": 7.679,
+       "mean_speed_mps": 5.802,
+       "min_speed_mps": 5.466,
+       "full_throttle_share": 0.974,
+       "mean_abs_steer_deg": 14.205,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.453,
+       "min_accel_mps2": -0.201
+      }
+     ]
+    },
+    {
+     "lap": 8,
+     "time_s": 22.69,
+     "sectors_s": [
+      7.554,
+      7.515,
+      7.62
+     ],
+     "mean_speed_mps": 5.866,
+     "max_speed_mps": 6.024,
+     "full_throttle_share": 0.953,
+     "mean_abs_steer_deg": 10.241,
+     "mean_abs_steer_change": 0.0917,
+     "mean_abs_throttle_change": 0.0083,
+     "gap_at_line_m": -19.27,
+     "sector_detail": [
+      {
+       "time_s": 7.554,
+       "mean_speed_mps": 5.854,
+       "min_speed_mps": 5.606,
+       "full_throttle_share": 0.938,
+       "mean_abs_steer_deg": 12.183,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.595,
+       "min_accel_mps2": -2.211
+      },
+      {
+       "time_s": 7.515,
+       "mean_speed_mps": 5.918,
+       "min_speed_mps": 5.609,
+       "full_throttle_share": 0.965,
+       "mean_abs_steer_deg": 5.038,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.22,
+       "min_accel_mps2": -1.865
+      },
+      {
+       "time_s": 7.62,
+       "mean_speed_mps": 5.828,
+       "min_speed_mps": 5.675,
+       "full_throttle_share": 0.957,
+       "mean_abs_steer_deg": 13.444,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.518,
+       "min_accel_mps2": -0.632
+      }
+     ]
+    },
+    {
+     "lap": 9,
+     "time_s": 22.753,
+     "sectors_s": [
+      7.611,
+      7.52,
+      7.622
+     ],
+     "mean_speed_mps": 5.843,
+     "max_speed_mps": 6.035,
+     "full_throttle_share": 0.938,
+     "mean_abs_steer_deg": 10.589,
+     "mean_abs_steer_change": 0.0933,
+     "mean_abs_throttle_change": 0.0071,
+     "gap_at_line_m": -19.003,
+     "sector_detail": [
+      {
+       "time_s": 7.611,
+       "mean_speed_mps": 5.809,
+       "min_speed_mps": 5.53,
+       "full_throttle_share": 0.956,
+       "mean_abs_steer_deg": 13.108,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 0.937,
+       "min_accel_mps2": -3.345
+      },
+      {
+       "time_s": 7.52,
+       "mean_speed_mps": 5.904,
+       "min_speed_mps": 5.541,
+       "full_throttle_share": 0.884,
+       "mean_abs_steer_deg": 5.716,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.576,
+       "min_accel_mps2": -1.393
+      },
+      {
+       "time_s": 7.622,
+       "mean_speed_mps": 5.817,
+       "min_speed_mps": 5.619,
+       "full_throttle_share": 0.974,
+       "mean_abs_steer_deg": 12.837,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.563,
+       "min_accel_mps2": -2.059
+      }
+     ]
+    },
+    {
+     "lap": 10,
+     "time_s": 22.675,
+     "sectors_s": [
+      7.54,
+      7.516,
+      7.62
+     ],
+     "mean_speed_mps": 5.831,
+     "max_speed_mps": 6.024,
+     "full_throttle_share": 0.932,
+     "mean_abs_steer_deg": 10.45,
+     "mean_abs_steer_change": 0.093,
+     "mean_abs_throttle_change": 0.012,
+     "gap_at_line_m": -18.58,
+     "sector_detail": [
+      {
+       "time_s": 7.54,
+       "mean_speed_mps": 5.815,
+       "min_speed_mps": 5.639,
+       "full_throttle_share": 0.938,
+       "mean_abs_steer_deg": 13.635,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.209,
+       "min_accel_mps2": -1.716
+      },
+      {
+       "time_s": 7.516,
+       "mean_speed_mps": 5.925,
+       "min_speed_mps": 5.64,
+       "full_throttle_share": 0.973,
+       "mean_abs_steer_deg": 5.226,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.865,
+       "min_accel_mps2": -1.95
+      },
+      {
+       "time_s": 7.62,
+       "mean_speed_mps": 5.753,
+       "min_speed_mps": 5.54,
+       "full_throttle_share": 0.886,
+       "mean_abs_steer_deg": 12.471,
+       "max_abs_steer_deg": 25.0,
+       "max_accel_mps2": 1.943,
+       "min_accel_mps2": -2.682
+      }
+     ]
+    }
+   ],
+   "flying_laps": {
+    "n": 9,
+    "lap_mean_s": 22.799,
+    "lap_std_s": 0.185,
+    "best_lap_s": 22.536,
+    "sector_mean_s": [
+     7.617,
+     7.527,
+     7.655
+    ],
+    "sector_std_s": [
+     0.126,
+     0.032,
+     0.063
+    ],
+    "best_sectors_s": [
+     7.519,
+     7.482,
+     7.53
+    ],
+    "theoretical_best_s": 22.531,
+    "sector_mean_speed_mps": [
+     5.812,
+     5.918,
+     5.795
+    ],
+    "sector_full_throttle_share": [
+     0.942,
+     0.94,
+     0.941
+    ],
+    "sector_mean_abs_steer_deg": [
+     12.8,
+     5.532,
+     13.446
+    ],
+    "mean_speed_mps": 5.841,
+    "max_speed_mps": 6.093,
+    "full_throttle_share": 0.941,
+    "mean_abs_steer_change": 0.096,
+    "mean_abs_throttle_change": 0.01
+   }
+  }
+ },
+ "control_steps": 3470,
+ "hit_step_cap": false
+}
